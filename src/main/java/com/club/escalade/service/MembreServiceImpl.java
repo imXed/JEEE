@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Implémentation du service des membres.
@@ -16,6 +17,8 @@ import java.util.Optional;
 @Service
 @Transactional
 public class MembreServiceImpl implements MembreService {
+
+    private static final Pattern BCRYPT_HASH_PATTERN = Pattern.compile("^\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
 
     private final MembreRepository membreRepository;
     private final PasswordEncoder passwordEncoder;
@@ -51,7 +54,7 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public Membre save(Membre membre) {
-        if (membre.getMotDePasse() != null && !membre.getMotDePasse().startsWith("$2")) {
+        if (membre.getMotDePasse() != null && !BCRYPT_HASH_PATTERN.matcher(membre.getMotDePasse()).matches()) {
             membre.setMotDePasse(passwordEncoder.encode(membre.getMotDePasse()));
         }
         return membreRepository.save(membre);

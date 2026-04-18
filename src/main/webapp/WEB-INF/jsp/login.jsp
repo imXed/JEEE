@@ -11,7 +11,7 @@
 <h1>Connexion</h1>
 
 <c:if test="${param.error != null}">
-    <p style="color:red;">Email ou mot de passe invalide.</p>
+    <p style="color:red;">Identifiants invalides.</p>
 </c:if>
 
 <c:if test="${param.logout != null}">
