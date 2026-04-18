@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Membre membre = membreRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
         return User.withUsername(membre.getEmail())
                 .password(membre.getMotDePasse())

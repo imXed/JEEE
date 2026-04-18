@@ -18,7 +18,8 @@ import java.util.regex.Pattern;
 @Transactional
 public class MembreServiceImpl implements MembreService {
 
-    private static final Pattern BCRYPT_HASH_PATTERN = Pattern.compile("^\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
+    private static final Pattern BCRYPT_HASH_PATTERN =
+            Pattern.compile("^\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
 
     private final MembreRepository membreRepository;
     private final PasswordEncoder passwordEncoder;
@@ -54,10 +55,14 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public Membre save(Membre membre) {
-        if (membre.getMotDePasse() != null && !BCRYPT_HASH_PATTERN.matcher(membre.getMotDePasse()).matches()) {
+        if (membre.getMotDePasse() != null && !isBcryptHash(membre.getMotDePasse())) {
             membre.setMotDePasse(passwordEncoder.encode(membre.getMotDePasse()));
         }
         return membreRepository.save(membre);
+    }
+
+    private boolean isBcryptHash(String value) {
+        return BCRYPT_HASH_PATTERN.matcher(value).matches();
     }
 
     @Override
