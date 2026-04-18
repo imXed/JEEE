@@ -25,9 +25,9 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/error", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers(
                                 "/sortie/create", "/sortie/edit/**", "/sortie/delete/**",
-                                "/sorties/create", "/sorties/edit/**", "/sorties/delete/**",
-                                "/membres", "/membres/**"
+                                "/sorties/create", "/sorties/edit/**", "/sorties/delete/**"
                         ).authenticated()
+                        .requestMatchers(HttpMethod.GET, "/membres", "/membres/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
