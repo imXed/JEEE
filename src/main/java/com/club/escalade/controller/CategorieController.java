@@ -25,7 +25,7 @@ public class CategorieController {
     }
 
     @GetMapping("/categories/{id}")
-    public String sortiesByCategorie(@PathVariable Long id, Model model) {
+    public String showCategoryDetails(@PathVariable Long id, Model model) {
         model.addAttribute("categories", categorieService.findAll());
 
         Optional<Categorie> categorieOpt = categorieService.findById(id);
