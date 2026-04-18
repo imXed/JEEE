@@ -3,6 +3,7 @@ package com.club.escalade.service;
 import com.club.escalade.dao.MembreRepository;
 import com.club.escalade.entity.Membre;
 import com.club.escalade.util.SearchTextUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +18,11 @@ import java.util.Optional;
 public class MembreServiceImpl implements MembreService {
 
     private final MembreRepository membreRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public MembreServiceImpl(MembreRepository membreRepository) {
+    public MembreServiceImpl(MembreRepository membreRepository, PasswordEncoder passwordEncoder) {
         this.membreRepository = membreRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -48,6 +51,9 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public Membre save(Membre membre) {
+        if (membre.getMotDePasse() != null && !membre.getMotDePasse().startsWith("$2")) {
+            membre.setMotDePasse(passwordEncoder.encode(membre.getMotDePasse()));
+        }
         return membreRepository.save(membre);
     }
 
