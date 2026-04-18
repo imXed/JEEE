@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class Membre {
     private String email;
 
     @NotBlank
-    @Size(min = 8, max = 255)
+    @Size(max = 255)
     @Column(name = "mot_de_passe", nullable = false, length = 255)
     private String motDePasse;
 
@@ -88,10 +89,10 @@ public class Membre {
     }
 
     public List<Sortie> getSortiesCreees() {
-        return sortiesCreees;
+        return Collections.unmodifiableList(sortiesCreees);
     }
 
     public void setSortiesCreees(List<Sortie> sortiesCreees) {
-        this.sortiesCreees = sortiesCreees;
+        this.sortiesCreees = new ArrayList<>(sortiesCreees);
     }
 }

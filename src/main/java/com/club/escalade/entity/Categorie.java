@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +48,10 @@ public class Categorie {
     }
 
     public List<Sortie> getSorties() {
-        return sorties;
+        return Collections.unmodifiableList(sorties);
     }
 
     public void setSorties(List<Sortie> sorties) {
-        this.sorties = sorties;
+        this.sorties = new ArrayList<>(sorties);
     }
 }
