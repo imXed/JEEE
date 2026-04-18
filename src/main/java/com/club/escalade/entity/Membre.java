@@ -84,6 +84,10 @@ public class Membre {
         this.motDePasse = motDePasse;
     }
 
+    public String getMotDePasse() {
+        return motDePasse;
+    }
+
     public List<Sortie> getSortiesCreees() {
         return Collections.unmodifiableList(sortiesCreees);
     }
