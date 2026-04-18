@@ -80,10 +80,6 @@ public class Membre {
         this.email = email;
     }
 
-    public String getMotDePasse() {
-        return motDePasse;
-    }
-
     public void setMotDePasse(String motDePasse) {
         this.motDePasse = motDePasse;
     }
