@@ -2,6 +2,7 @@ package com.club.escalade.service;
 
 import com.club.escalade.dao.MembreRepository;
 import com.club.escalade.entity.Membre;
+import com.club.escalade.util.SearchTextUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +43,7 @@ public class MembreServiceImpl implements MembreService {
     @Override
     @Transactional(readOnly = true)
     public List<Membre> findByNom(String nom) {
-        return membreRepository.findByNomContainingIgnoreCase(nom == null ? "" : nom.trim());
+        return membreRepository.findByNomContainingIgnoreCase(SearchTextUtils.normalizeForContains(nom));
     }
 
     @Override

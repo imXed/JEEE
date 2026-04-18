@@ -3,6 +3,7 @@ package com.club.escalade.service;
 import com.club.escalade.dao.SortieRepository;
 import com.club.escalade.dto.SortieRechercheCriteria;
 import com.club.escalade.entity.Sortie;
+import com.club.escalade.util.SearchTextUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class SortieServiceImpl implements SortieService {
     @Override
     @Transactional(readOnly = true)
     public List<Sortie> findByNom(String nom) {
-        return sortieRepository.findByNomContainingIgnoreCase(normalizeForContains(nom));
+        return sortieRepository.findByNomContainingIgnoreCase(SearchTextUtils.normalizeForContains(nom));
     }
 
     @Override
@@ -52,7 +53,7 @@ public class SortieServiceImpl implements SortieService {
         }
 
         return sortieRepository.rechercher(
-                normalize(safeCriteria.getNom()),
+                SearchTextUtils.normalize(safeCriteria.getNom()),
                 safeCriteria.getCategorieId(),
                 safeCriteria.getCreateurId(),
                 safeCriteria.getDateDebut(),
@@ -70,16 +71,4 @@ public class SortieServiceImpl implements SortieService {
         sortieRepository.deleteById(id);
     }
 
-    private String normalize(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private String normalizeForContains(String value) {
-        String normalized = normalize(value);
-        return normalized == null ? "" : normalized;
-    }
 }

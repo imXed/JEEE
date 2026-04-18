@@ -2,6 +2,7 @@ package com.club.escalade.service;
 
 import com.club.escalade.dao.CategorieRepository;
 import com.club.escalade.entity.Categorie;
+import com.club.escalade.util.SearchTextUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class CategorieServiceImpl implements CategorieService {
     @Override
     @Transactional(readOnly = true)
     public List<Categorie> findByNom(String nom) {
-        return categorieRepository.findByNomContainingIgnoreCase(nom == null ? "" : nom.trim());
+        return categorieRepository.findByNomContainingIgnoreCase(SearchTextUtils.normalizeForContains(nom));
     }
 
     @Override
