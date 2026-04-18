@@ -13,10 +13,10 @@
     <a class="btn btn-link ps-0 mb-3" href="${pageContext.request.contextPath}/membres">← Retour aux membres</a>
 
     <c:if test="${not empty successMessage}">
-        <div class="alert alert-success">${successMessage}</div>
+        <div class="alert alert-success"><c:out value="${successMessage}"/></div>
     </c:if>
     <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger">${errorMessage}</div>
+        <div class="alert alert-danger"><c:out value="${errorMessage}"/></div>
     </c:if>
 
     <div class="card mb-4">
@@ -24,9 +24,9 @@
             <h1 class="h4 mb-0">Informations du membre</h1>
         </div>
         <div class="card-body">
-            <p><strong>Nom :</strong> ${membre.nom}</p>
-            <p><strong>Prénom :</strong> ${membre.prenom}</p>
-            <p class="mb-0"><strong>Email :</strong> ${membre.email}</p>
+            <p><strong>Nom :</strong> <c:out value="${membre.nom}"/></p>
+            <p><strong>Prénom :</strong> <c:out value="${membre.prenom}"/></p>
+            <p class="mb-0"><strong>Email :</strong> <c:out value="${membre.email}"/></p>
         </div>
     </div>
 
@@ -49,9 +49,9 @@
                 </c:if>
                 <c:forEach items="${sorties}" var="sortie">
                     <tr>
-                        <td>${sortie.nom}</td>
-                        <td>${sortie.categorie.nom}</td>
-                        <td>${sortie.dateSortie}</td>
+                        <td><c:out value="${sortie.nom}"/></td>
+                        <td><c:out value="${sortie.categorie.nom}"/></td>
+                        <td><c:out value="${sortie.dateSortie}"/></td>
                     </tr>
                 </c:forEach>
                 </tbody>

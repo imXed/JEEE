@@ -16,10 +16,10 @@
     </div>
 
     <c:if test="${not empty successMessage}">
-        <div class="alert alert-success">${successMessage}</div>
+        <div class="alert alert-success"><c:out value="${successMessage}"/></div>
     </c:if>
     <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger">${errorMessage}</div>
+        <div class="alert alert-danger"><c:out value="${errorMessage}"/></div>
     </c:if>
 
     <div class="card">
@@ -42,9 +42,9 @@
                 </c:if>
                 <c:forEach items="${membres}" var="membre">
                     <tr>
-                        <td>${membre.nom}</td>
-                        <td>${membre.prenom}</td>
-                        <td>${membre.email}</td>
+                        <td><c:out value="${membre.nom}"/></td>
+                        <td><c:out value="${membre.prenom}"/></td>
+                        <td><c:out value="${membre.email}"/></td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary"
                                href="${pageContext.request.contextPath}/membres/${membre.id}">Voir</a>
