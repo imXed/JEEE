@@ -37,7 +37,7 @@ public class SortieServiceImpl implements SortieService {
     @Override
     @Transactional(readOnly = true)
     public List<Sortie> findByNom(String nom) {
-        return sortieRepository.findByNomContainingIgnoreCase(nom == null ? "" : nom.trim());
+        return sortieRepository.findByNomContainingIgnoreCase(normalizeForContains(nom));
     }
 
     @Override
@@ -76,5 +76,10 @@ public class SortieServiceImpl implements SortieService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeForContains(String value) {
+        String normalized = normalize(value);
+        return normalized == null ? "" : normalized;
     }
 }

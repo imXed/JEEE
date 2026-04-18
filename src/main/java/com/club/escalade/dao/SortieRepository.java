@@ -21,8 +21,8 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
     @Query("""
             SELECT s
             FROM Sortie s
-            JOIN s.createur c
-            JOIN s.categorie cat
+            LEFT JOIN s.createur c
+            LEFT JOIN s.categorie cat
             WHERE (:nom IS NULL OR LOWER(s.nom) LIKE LOWER(CONCAT('%', :nom, '%')))
               AND (:categorieId IS NULL OR cat.id = :categorieId)
               AND (:createurId IS NULL OR c.id = :createurId)

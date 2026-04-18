@@ -10,8 +10,5 @@ import java.util.List;
  */
 public interface CategorieRepository extends JpaRepository<Categorie, Long> {
 
-    @Override
-    List<Categorie> findAll();
-
     List<Categorie> findByNomContainingIgnoreCase(String nom);
 }
