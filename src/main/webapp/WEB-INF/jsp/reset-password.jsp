@@ -17,7 +17,7 @@
 
 <form method="post" action="${pageContext.request.contextPath}/reset-password">
     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-    <input type="hidden" name="token" value="${token}">
+    <input type="hidden" name="token" value="${resetPasswordForm.token}">
     <div class="mb-3">
         <label class="form-label" for="motDePasse">Nouveau mot de passe</label>
         <input class="form-control" id="motDePasse" name="motDePasse" type="password" minlength="6" required>
@@ -26,4 +26,3 @@
 </form>
 </body>
 </html>
-

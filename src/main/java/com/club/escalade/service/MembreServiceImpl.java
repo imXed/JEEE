@@ -16,6 +16,9 @@ import java.util.Optional;
 @Service
 @Transactional
 public class MembreServiceImpl implements MembreService {
+    // Détecte un hash BCrypt déjà encodé pour éviter un double encodage.
+    private static final String BCRYPT_PATTERN = "^\\$2[aby]\\$\\d{2}\\$.*";
+
     private final MembreDao membreDao;
     private final PasswordEncoder passwordEncoder;
 
@@ -57,13 +60,7 @@ public class MembreServiceImpl implements MembreService {
     @Override
     public Membre save(Membre membre) {
         String motDePasse = membre.getMotDePasse();
-        boolean isExistingEncodedPassword = membre.getId() != null
-                && membreDao.findById(membre.getId())
-                .map(Membre::getMotDePasse)
-                .map(existingPassword -> existingPassword.equals(motDePasse))
-                .orElse(false);
-
-        if (!isExistingEncodedPassword && motDePasse != null) {
+        if (motDePasse != null && !motDePasse.matches(BCRYPT_PATTERN)) {
             membre.setMotDePasse(passwordEncoder.encode(membre.getMotDePasse()));
         }
 

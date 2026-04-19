@@ -17,6 +17,9 @@ import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+    // Répartition des dates des sorties générées sur une année glissante.
+    private static final int SORTIE_DATE_RANGE_DAYS = 365;
+
     private final CategorieService categorieService;
     private final MembreService membreService;
     private final SortieService sortieService;
@@ -116,7 +119,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Sortie " + (i + 1),
                     "Description de la sortie " + (i + 1),
                     i % 3 == 0 ? "https://example.org/sortie/" + (i + 1) : null,
-                    LocalDate.now().plusDays((i % 365) + 1L),
+                    LocalDate.now().plusDays((i % SORTIE_DATE_RANGE_DAYS) + 1L),
                     createur,
                     categorie
             );
@@ -143,4 +146,3 @@ public class DataInitializer implements CommandLineRunner {
         sortieService.save(sortie);
     }
 }
-

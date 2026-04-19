@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
 
 import jakarta.validation.Valid;
 
@@ -60,21 +61,24 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("errorMessage", "Lien invalide ou expiré.");
             return "redirect:/forgot-password";
         }
-        model.addAttribute("token", token);
+        ResetPasswordForm form = new ResetPasswordForm();
+        form.setToken(token);
+        model.addAttribute("resetPasswordForm", form);
         return "reset-password";
     }
 
     @PostMapping("/reset-password")
     public String resetPassword(
-            @RequestParam String token,
-            @RequestParam String motDePasse,
+            @Valid @ModelAttribute("resetPasswordForm") ResetPasswordForm resetPasswordForm,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes
     ) {
-        if (motDePasse == null || motDePasse.length() < 6) {
+        String encodedToken = UriUtils.encode(resetPasswordForm.getToken(), java.nio.charset.StandardCharsets.UTF_8);
+        if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Le mot de passe doit contenir au moins 6 caractères.");
-            return "redirect:/reset-password?token=" + token;
+            return "redirect:/reset-password?token=" + encodedToken;
         }
-        boolean success = passwordResetService.resetPassword(token, motDePasse);
+        boolean success = passwordResetService.resetPassword(resetPasswordForm.getToken(), resetPasswordForm.getMotDePasse());
         if (!success) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lien invalide ou expiré.");
             return "redirect:/forgot-password";
@@ -166,6 +170,31 @@ public class AuthController {
 
         public void setEmail(String email) {
             this.email = email;
+        }
+
+        public String getMotDePasse() {
+            return motDePasse;
+        }
+
+        public void setMotDePasse(String motDePasse) {
+            this.motDePasse = motDePasse;
+        }
+    }
+
+    public static class ResetPasswordForm {
+        @NotBlank
+        private String token;
+
+        @NotBlank
+        @Size(min = 6, max = 255)
+        private String motDePasse;
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
         }
 
         public String getMotDePasse() {
