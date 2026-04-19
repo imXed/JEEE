@@ -12,3 +12,7 @@ INSERT INTO sorties (id, nom, description, site_web, date_sortie, createur_id, c
 INSERT INTO sorties (id, nom, description, site_web, date_sortie, createur_id, categorie_id) VALUES (4, 'Bloc à Fontainebleau', 'Journée blocs sur circuits orange et bleu.', 'https://www.fontainebleau.fr', '2025-10-03', 2, 1);
 INSERT INTO sorties (id, nom, description, site_web, date_sortie, createur_id, categorie_id) VALUES (5, 'Crêtes du Jura', 'Randonnée sportive en crête avec dénivelé soutenu.', NULL, '2026-09-12', 1, 2);
 INSERT INTO sorties (id, nom, description, site_web, date_sortie, createur_id, categorie_id) VALUES (6, 'École de glace à La Grave', 'Progression sur glacier et ateliers de sécurité.', 'https://www.lagrave.com', '2027-01-18', 3, 3);
+
+ALTER TABLE membres ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE categories ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE sorties ALTER COLUMN id RESTART WITH 7;
