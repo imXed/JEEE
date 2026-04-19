@@ -1,6 +1,6 @@
 package com.club.escalade.service;
 
-import com.club.escalade.dao.MembreRepository;
+import com.club.escalade.dao.api.MembreDao;
 import com.club.escalade.entity.Membre;
 import com.club.escalade.util.SearchTextUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,56 +16,65 @@ import java.util.Optional;
 @Service
 @Transactional
 public class MembreServiceImpl implements MembreService {
-    private final MembreRepository membreRepository;
+    // Détecte un hash BCrypt déjà encodé pour éviter un double encodage.
+    private static final String BCRYPT_PATTERN = "^\\$2[aby]\\$\\d{2}\\$.*";
+
+    private final MembreDao membreDao;
     private final PasswordEncoder passwordEncoder;
 
-    public MembreServiceImpl(MembreRepository membreRepository, PasswordEncoder passwordEncoder) {
-        this.membreRepository = membreRepository;
+    public MembreServiceImpl(MembreDao membreDao, PasswordEncoder passwordEncoder) {
+        this.membreDao = membreDao;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Membre> findAll() {
-        return membreRepository.findAll();
+        return membreDao.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Membre> findById(Long id) {
-        return membreRepository.findById(id);
+        return membreDao.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Membre> findByIdWithSorties(Long id) {
+        return membreDao.findByIdWithSorties(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Membre> findByEmail(String email) {
-        return membreRepository.findByEmail(email);
+        return membreDao.findByEmail(email);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Membre> findByNom(String nom) {
-        return membreRepository.findByNomContainingIgnoreCase(SearchTextUtils.normalizeForContains(nom));
+        return membreDao.findByNomContaining(SearchTextUtils.normalizeForContains(nom));
     }
 
     @Override
     public Membre save(Membre membre) {
         String motDePasse = membre.getMotDePasse();
-        boolean isExistingEncodedPassword = membre.getId() != null
-                && membreRepository.findById(membre.getId())
-                .map(Membre::getMotDePasse)
-                .map(existingPassword -> existingPassword.equals(motDePasse))
-                .orElse(false);
-
-        if (!isExistingEncodedPassword && motDePasse != null) {
+        if (motDePasse != null && !motDePasse.matches(BCRYPT_PATTERN)) {
             membre.setMotDePasse(passwordEncoder.encode(membre.getMotDePasse()));
         }
 
-        return membreRepository.save(membre);
+        return membreDao.save(membre);
     }
 
     @Override
     public void deleteById(Long id) {
-        membreRepository.deleteById(id);
+        membreDao.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long count() {
+        return membreDao.count();
     }
 }

@@ -18,10 +18,10 @@
     </div>
 
     <c:if test="${not empty successMessage}">
-        <div class="alert alert-success">${successMessage}</div>
+        <div class="alert alert-success"><c:out value="${successMessage}"/></div>
     </c:if>
     <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger">${errorMessage}</div>
+        <div class="alert alert-danger"><c:out value="${errorMessage}"/></div>
     </c:if>
 
     <div class="card mb-4">
@@ -37,14 +37,31 @@
                     <select class="form-select" id="categorieId" name="categorieId">
                         <option value="">Toutes</option>
                         <c:forEach items="${categories}" var="categorie">
-                            <option value="${categorie.id}" ${categorieId == categorie.id ? 'selected' : ''}>${categorie.nom}</option>
+                            <option value="${categorie.id}" ${categorieId == categorie.id ? 'selected' : ''}><c:out value="${categorie.nom}"/></option>
                         </c:forEach>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="date">Date</label>
-                    <input class="form-control" id="date" name="date" type="date" value="${date}">
+                    <label class="form-label" for="dateDebut">Date début</label>
+                    <input class="form-control" id="dateDebut" name="dateDebut" type="date" value="${dateDebut}">
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="dateFin">Date fin</label>
+                    <input class="form-control" id="dateFin" name="dateFin" type="date" value="${dateFin}">
+                </div>
+                <c:if test="${isAuthenticated}">
+                    <div class="col-md-4">
+                        <label class="form-label" for="createurId">Créateur</label>
+                        <select class="form-select" id="createurId" name="createurId">
+                            <option value="">Tous</option>
+                            <c:forEach items="${membres}" var="membre">
+                                <option value="${membre.id}" ${createurId == membre.id ? 'selected' : ''}>
+                                    <c:out value="${membre.prenom}"/> <c:out value="${membre.nom}"/>
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </c:if>
                 <div class="col-12 d-flex gap-2">
                     <button type="submit" class="btn btn-outline-primary">Rechercher</button>
                     <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/sorties">Réinitialiser</a>
@@ -77,11 +94,11 @@
                 </c:if>
                 <c:forEach items="${sorties}" var="sortie">
                     <tr>
-                        <td>${sortie.nom}</td>
-                        <td>${sortie.dateSortie}</td>
-                        <td>${sortie.categorie.nom}</td>
+                        <td><c:out value="${sortie.nom}"/></td>
+                        <td><c:out value="${sortie.dateSortie}"/></td>
+                        <td><c:out value="${sortie.categorie.nom}"/></td>
                         <c:if test="${isAuthenticated}">
-                            <td>${sortie.createur.prenom} ${sortie.createur.nom}</td>
+                            <td><c:out value="${sortie.createur.prenom}"/> <c:out value="${sortie.createur.nom}"/></td>
                             <td>
                                 <c:if test="${not empty sortie.siteWeb}">
                                     <a href="${sortie.siteWeb}" target="_blank" rel="noopener noreferrer">Lien</a>
@@ -116,7 +133,7 @@
                     <li class="page-item ${p == currentPage ? 'active' : ''}">
                         <c:if test="${isSearch}">
                             <a class="page-link"
-                               href="${pageContext.request.contextPath}/sorties/search?page=${p}&size=${pageSize}&nom=${nom}&categorieId=${categorieId}&date=${date}">${p + 1}</a>
+                               href="${pageContext.request.contextPath}/sorties/search?page=${p}&size=${pageSize}&nom=${nom}&categorieId=${categorieId}&createurId=${createurId}&dateDebut=${dateDebut}&dateFin=${dateFin}">${p + 1}</a>
                         </c:if>
                         <c:if test="${not isSearch}">
                             <a class="page-link"

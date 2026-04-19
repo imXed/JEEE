@@ -13,28 +13,28 @@
     <a class="btn btn-link ps-0 mb-3" href="${pageContext.request.contextPath}/sorties">← Retour aux sorties</a>
 
     <c:if test="${not empty successMessage}">
-        <div class="alert alert-success">${successMessage}</div>
+        <div class="alert alert-success"><c:out value="${successMessage}"/></div>
     </c:if>
     <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger">${errorMessage}</div>
+        <div class="alert alert-danger"><c:out value="${errorMessage}"/></div>
     </c:if>
 
     <div class="card">
         <div class="card-header">
-            <h1 class="h4 mb-0">${sortie.nom}</h1>
+            <h1 class="h4 mb-0"><c:out value="${sortie.nom}"/></h1>
         </div>
         <div class="card-body">
-            <p><strong>Date :</strong> ${sortie.dateSortie}</p>
-            <p><strong>Catégorie :</strong> ${sortie.categorie.nom}</p>
+            <p><strong>Date :</strong> <c:out value="${sortie.dateSortie}"/></p>
+            <p><strong>Catégorie :</strong> <c:out value="${sortie.categorie.nom}"/></p>
             <p><strong>Description :</strong></p>
-            <p>${sortie.description}</p>
+            <p><c:out value="${sortie.description}"/></p>
 
             <c:if test="${isAuthenticated}">
-                <p><strong>Créateur :</strong> ${sortie.createur.prenom} ${sortie.createur.nom}</p>
+                <p><strong>Créateur :</strong> <c:out value="${sortie.createur.prenom}"/> <c:out value="${sortie.createur.nom}"/></p>
                 <p>
                     <strong>Site web :</strong>
                     <c:if test="${not empty sortie.siteWeb}">
-                        <a href="${sortie.siteWeb}" target="_blank" rel="noopener noreferrer">${sortie.siteWeb}</a>
+                        <a href="${sortie.siteWeb}" target="_blank" rel="noopener noreferrer"><c:out value="${sortie.siteWeb}"/></a>
                     </c:if>
                     <c:if test="${empty sortie.siteWeb}">
                         <span class="text-muted">Non renseigné</span>

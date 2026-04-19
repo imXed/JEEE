@@ -9,8 +9,10 @@
 </head>
 <body class="container mt-5">
 <h1 class="mb-3">Bienvenue</h1>
-<p>Vous avez déjà un compte ? Connectez-vous. Sinon, créez-en un.</p>
+<p>Consultez les catégories et les sorties, ou connectez-vous pour gérer vos sorties.</p>
 <div class="d-flex gap-2">
+    <a class="btn btn-success" href="${pageContext.request.contextPath}/categories">Catégories</a>
+    <a class="btn btn-info text-white" href="${pageContext.request.contextPath}/sorties">Sorties</a>
     <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Se connecter</a>
     <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Créer un compte</a>
 </div>

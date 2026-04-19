@@ -13,7 +13,7 @@
     <h1 class="mb-4">Catégories</h1>
 
     <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger" role="alert">${errorMessage}</div>
+        <div class="alert alert-danger" role="alert"><c:out value="${errorMessage}"/></div>
     </c:if>
 
     <div class="row g-4">
@@ -25,7 +25,7 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <a class="text-decoration-none"
                                href="${pageContext.request.contextPath}/categories/${categorie.id}">
-                                    ${categorie.nom}
+                                    <c:out value="${categorie.nom}"/>
                             </a>
                         </li>
                     </c:forEach>
@@ -38,7 +38,7 @@
                 <div class="card-header">
                     <c:if test="${empty selectedCategorie}">Sorties de la catégorie</c:if>
                     <c:if test="${not empty selectedCategorie}">
-                        Sorties - ${selectedCategorie.nom}
+                        Sorties - <c:out value="${selectedCategorie.nom}"/>
                     </c:if>
                 </div>
                 <div class="card-body">
@@ -54,8 +54,9 @@
                         <ul class="list-group">
                             <c:forEach items="${selectedCategorie.sorties}" var="sortie">
                                 <li class="list-group-item">
-                                    <div class="fw-semibold">${sortie.nom}</div>
-                                    <div class="small text-muted">${sortie.dateSortie}</div>
+                                    <div class="fw-semibold"><c:out value="${sortie.nom}"/></div>
+                                    <div class="small text-muted"><c:out value="${sortie.dateSortie}"/></div>
+                                    <a class="small" href="${pageContext.request.contextPath}/sorties/${sortie.id}">Voir détail</a>
                                 </li>
                             </c:forEach>
                         </ul>

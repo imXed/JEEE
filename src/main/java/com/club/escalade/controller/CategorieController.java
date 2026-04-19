@@ -28,7 +28,7 @@ public class CategorieController {
     public String showCategoryDetails(@PathVariable Long id, Model model) {
         model.addAttribute("categories", categorieService.findAll());
 
-        Optional<Categorie> categorieOpt = categorieService.findById(id);
+        Optional<Categorie> categorieOpt = categorieService.findByIdWithSorties(id);
         if (categorieOpt.isEmpty()) {
             model.addAttribute("errorMessage", "Catégorie introuvable.");
             return "categories";
