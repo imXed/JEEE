@@ -11,8 +11,8 @@
 <h1 class="mb-3">Bienvenue</h1>
 <p>Vous avez déjà un compte ? Connectez-vous. Sinon, créez-en un.</p>
 <div class="d-flex gap-2">
-    <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Log in</a>
-    <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Register</a>
+    <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Se connecter</a>
+    <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Créer un compte</a>
 </div>
 </body>
 </html>
