@@ -12,6 +12,12 @@
 
 <h2>Connexion</h2>
 
+<c:if test="${not empty successMessage}">
+    <div class="alert alert-success">
+        <c:out value="${successMessage}"/>
+    </div>
+</c:if>
+
 <c:if test="${param.error != null}">
     <div class="alert alert-danger">
         Email ou mot de passe incorrect
@@ -31,7 +37,7 @@
 
     <div class="mb-3">
         <label>Email</label>
-        <input type="text" name="username" class="form-control" required/>
+        <input type="email" name="email" class="form-control" required/>
     </div>
 
     <div class="mb-3">
@@ -44,6 +50,10 @@
     </button>
 
 </form>
+
+<div class="mt-3">
+    <a href="${pageContext.request.contextPath}/register">Créer un compte</a>
+</div>
 
 </body>
 </html>
