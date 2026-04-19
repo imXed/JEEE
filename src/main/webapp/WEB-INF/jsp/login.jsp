@@ -1,34 +1,49 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<!DOCTYPE html>
-<html lang="fr">
+
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-<h1>Connexion</h1>
+
+<body class="container mt-5">
+
+<h2>Connexion</h2>
 
 <c:if test="${param.error != null}">
-    <p style="color:red;">Identifiants invalides.</p>
+    <div class="alert alert-danger">
+        Email ou mot de passe incorrect
+    </div>
 </c:if>
 
 <c:if test="${param.logout != null}">
-    <p style="color:green;">Vous avez été déconnecté.</p>
+    <div class="alert alert-success">
+        Déconnexion réussie
+    </div>
 </c:if>
 
-<form method="post" action="${pageContext.request.contextPath}/login">
+<form method="post" action="/login">
+
+    <!-- IMPORTANT CSRF -->
     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-    <div>
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" required/>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="text" name="username" class="form-control" required/>
     </div>
-    <div>
-        <label for="password">Mot de passe</label>
-        <input id="password" name="password" type="password" required/>
+
+    <div class="mb-3">
+        <label>Mot de passe</label>
+        <input type="password" name="password" class="form-control" required/>
     </div>
-    <button type="submit">Se connecter</button>
+
+    <button type="submit" class="btn btn-primary">
+        Se connecter
+    </button>
+
 </form>
+
 </body>
 </html>
