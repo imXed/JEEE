@@ -9,6 +9,10 @@ import com.club.escalade.service.CategorieService;
 import com.club.escalade.service.MembreService;
 import com.club.escalade.service.SortieService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,8 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -49,17 +51,19 @@ public class SortieController {
             @RequestParam(defaultValue = "10") int size,
             Model model
     ) {
-        List<Sortie> sorties = sortieService.findAll();
+        Pageable pageable = buildPageable(page, size);
+        Page<Sortie> sorties = sortieService.findAll(pageable);
         addAuthAttributes(model);
-        addPaginationAttributes(model, sorties, page, size);
+        addPaginationAttributes(model, sorties);
         model.addAttribute("categories", categorieService.findAll());
+        model.addAttribute("membres", membreService.findAll());
         model.addAttribute("isSearch", false);
         return "sorties";
     }
 
     @GetMapping("/{id}")
     public String detailSortie(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Sortie> sortieOpt = sortieService.findById(id);
+        Optional<Sortie> sortieOpt = sortieService.findDetailById(id);
         if (sortieOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Sortie introuvable.");
             return "redirect:/sorties";
@@ -74,25 +78,36 @@ public class SortieController {
     public String searchSorties(
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) Long categorieId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long createurId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Model model
     ) {
+        Optional<Membre> currentMembre = getCurrentMembre();
+
         SortieRechercheCriteria criteria = new SortieRechercheCriteria();
         criteria.setNom(nom);
         criteria.setCategorieId(categorieId);
-        criteria.setDateDebut(date);
-        criteria.setDateFin(date);
+        criteria.setDateDebut(dateDebut);
+        criteria.setDateFin(dateFin);
+        if (currentMembre.isPresent()) {
+            criteria.setCreateurId(createurId);
+        }
 
-        List<Sortie> sorties = sortieService.rechercher(criteria);
+        Pageable pageable = buildPageable(page, size);
+        Page<Sortie> sorties = sortieService.rechercher(criteria, pageable);
         addAuthAttributes(model);
-        addPaginationAttributes(model, sorties, page, size);
+        addPaginationAttributes(model, sorties);
         model.addAttribute("categories", categorieService.findAll());
+        model.addAttribute("membres", membreService.findAll());
         model.addAttribute("isSearch", true);
         model.addAttribute("nom", nom);
         model.addAttribute("categorieId", categorieId);
-        model.addAttribute("date", date);
+        model.addAttribute("createurId", createurId);
+        model.addAttribute("dateDebut", dateDebut);
+        model.addAttribute("dateFin", dateFin);
         return "sorties";
     }
 
@@ -272,25 +287,17 @@ public class SortieController {
                 && sortie.getCreateur().getId().equals(membre.getId());
     }
 
-    private void addPaginationAttributes(Model model, List<Sortie> allSorties, int page, int size) {
-        int safeSize = size <= 0 ? 10 : size;
-        int totalElements = allSorties == null ? 0 : allSorties.size();
-        int totalPages = totalElements == 0 ? 1 : (int) Math.ceil((double) totalElements / safeSize);
-        int safePage = Math.max(0, Math.min(page, totalPages - 1));
-        int fromIndex = safePage * safeSize;
-        int toIndex = Math.min(fromIndex + safeSize, totalElements);
+    private Pageable buildPageable(int page, int size) {
+        int safeSize = size <= 0 ? 10 : Math.min(size, 100);
+        int safePage = Math.max(page, 0);
+        return PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.ASC, "dateSortie"));
+    }
 
-        List<Sortie> pageContent;
-        if (totalElements == 0) {
-            pageContent = Collections.emptyList();
-        } else {
-            pageContent = allSorties.subList(fromIndex, toIndex);
-        }
-
-        model.addAttribute("sorties", pageContent);
-        model.addAttribute("currentPage", safePage);
-        model.addAttribute("pageSize", safeSize);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("totalElements", totalElements);
+    private void addPaginationAttributes(Model model, Page<Sortie> pageResult) {
+        model.addAttribute("sorties", pageResult.getContent());
+        model.addAttribute("currentPage", pageResult.getNumber());
+        model.addAttribute("pageSize", pageResult.getSize());
+        model.addAttribute("totalPages", Math.max(pageResult.getTotalPages(), 1));
+        model.addAttribute("totalElements", pageResult.getTotalElements());
     }
 }

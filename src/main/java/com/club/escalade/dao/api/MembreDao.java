@@ -1,15 +1,11 @@
-package com.club.escalade.service;
+package com.club.escalade.dao.api;
 
 import com.club.escalade.entity.Membre;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Services métier des membres.
- */
-public interface MembreService {
-
+public interface MembreDao {
     List<Membre> findAll();
 
     Optional<Membre> findById(Long id);
@@ -18,7 +14,7 @@ public interface MembreService {
 
     Optional<Membre> findByEmail(String email);
 
-    List<Membre> findByNom(String nom);
+    List<Membre> findByNomContaining(String nom);
 
     Membre save(Membre membre);
 
@@ -26,3 +22,4 @@ public interface MembreService {
 
     long count();
 }
+

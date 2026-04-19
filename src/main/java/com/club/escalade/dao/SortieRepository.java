@@ -1,6 +1,9 @@
 package com.club.escalade.dao;
 
 import com.club.escalade.entity.Sortie;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +17,13 @@ import java.util.List;
 public interface SortieRepository extends JpaRepository<Sortie, Long> {
 
     List<Sortie> findByNomContainingIgnoreCase(String nom);
+
+    @EntityGraph(attributePaths = {"createur", "categorie"})
+    Page<Sortie> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"createur", "categorie"})
+    @Query("SELECT s FROM Sortie s WHERE s.id = :id")
+    java.util.Optional<Sortie> findDetailById(@Param("id") Long id);
 
     /**
      * Recherche multi-critères des sorties.
@@ -30,11 +40,12 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
               AND (:dateFin IS NULL OR s.dateSortie <= :dateFin)
             ORDER BY s.dateSortie ASC
             """)
-    List<Sortie> rechercher(
+    Page<Sortie> rechercher(
             @Param("nom") String nom,
             @Param("categorieId") Long categorieId,
             @Param("createurId") Long createurId,
             @Param("dateDebut") LocalDate dateDebut,
-            @Param("dateFin") LocalDate dateFin
+            @Param("dateFin") LocalDate dateFin,
+            Pageable pageable
     );
 }
