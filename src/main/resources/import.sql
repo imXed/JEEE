@@ -1,5 +1,5 @@
 INSERT INTO membres (id, nom, prenom, email, mot_de_passe) VALUES
-    (1, 'Dupont', 'Claire', 'claire.dupont@club-escalade.fr', '$2b$10$UzErTfaJMTmcB6RRgfGpTOGwnM7tiY.mqLqy3p.VZSv96J76sm9GK'),
+    (1, 'Dupont', 'Claire', 'claire.dupont@club-escalade.fr', '$2a$10$Dow1XzG1K7Qe9z9w9uQW5eWZz7e6b6Q6rXkzvYj7Y8W1XyYyZzYyG.mqLqy3p.VZSv96J76sm9GK'),
     (2, 'Martin', 'Julien', 'julien.martin@club-escalade.fr', '$2b$10$UzErTfaJMTmcB6RRgfGpTOGwnM7tiY.mqLqy3p.VZSv96J76sm9GK'),
     (3, 'Lefevre', 'Sophie', 'sophie.lefevre@club-escalade.fr', '$2b$10$UzErTfaJMTmcB6RRgfGpTOGwnM7tiY.mqLqy3p.VZSv96J76sm9GK');
 
