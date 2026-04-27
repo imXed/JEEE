@@ -23,7 +23,6 @@
     </sec:authorize>
     <sec:authorize access="isAnonymous()">
         <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Se connecter</a>
-        <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Créer un compte</a>
     </sec:authorize>
 </div>
 </body>

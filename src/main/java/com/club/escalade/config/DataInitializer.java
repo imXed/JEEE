@@ -13,33 +13,72 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
-    // Répartition des dates des sorties générées sur une année glissante.
     private static final int SORTIE_DATE_RANGE_DAYS = 365;
+    private static final int SORTIE_SITE_WEB_FREQUENCY = 3;
+
+    private static final List<String> PRENOMS = List.of(
+            "Jean", "Marie", "Paul", "Lucie", "Thomas", "Emma", "Nicolas", "Julie", "Antoine", "Camille",
+            "Hugo", "Sarah", "Louis", "Clara", "Alexandre", "Manon", "Maxime", "Léa", "Pierre", "Chloé",
+            "Arthur", "Inès", "Baptiste", "Zoé", "Raphaël", "Anaïs", "Jules", "Élise", "Noah", "Alice"
+    );
+
+    private static final List<String> NOMS = List.of(
+            "Dupont", "Martin", "Bernard", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon",
+            "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel",
+            "Girard", "Andre", "Lefevre", "Mercier", "Blanc", "Guerin", "Boyer", "Renaud", "Faure", "Chevalier"
+    );
+
+    private static final List<String> CATEGORIES_CATALOGUE = List.of(
+            "Escalade sportive",
+            "Bloc",
+            "Alpinisme neige",
+            "Alpinisme roche",
+            "Randonnée",
+            "Terrain d’aventure",
+            "Via ferrata",
+            "Cascade de glace",
+            "Escalade en salle",
+            "Grande voie",
+            "Ski de randonnée",
+            "Trail alpin",
+            "Slackline",
+            "Dry tooling",
+            "Escalade trad",
+            "Montagne été",
+            "Montagne hiver",
+            "Orientation",
+            "Bivouac",
+            "Course d’arête"
+    );
 
     private final CategorieService categorieService;
     private final MembreService membreService;
     private final SortieService sortieService;
+    private final Random random = new Random();
 
     @Value("${app.seed.enabled:true}")
     private boolean seedEnabled;
 
-    @Value("${app.seed.large-dataset:true}")
-    private boolean largeDatasetEnabled;
+    @Value("${app.seed.categories:15}")
+    private int categoriesToGenerate;
 
-    @Value("${app.seed.large.categories:40}")
-    private int largeCategories;
+    @Value("${app.seed.members:400}")
+    private int membersToGenerate;
 
-    @Value("${app.seed.large.members:300}")
-    private int largeMembers;
+    @Value("${app.seed.sorties:2000}")
+    private int sortiesToGenerate;
 
-    @Value("${app.seed.large.sorties:3000}")
-    private int largeSorties;
+    @Value("${app.seed.default-password:password}")
+    private String defaultPassword;
 
     public DataInitializer(CategorieService categorieService, MembreService membreService, SortieService sortieService) {
         this.categorieService = categorieService;
@@ -54,75 +93,57 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        List<Categorie> categories = createBaseCategories();
-        List<Membre> membres = createBaseMembers();
-        createBaseSorties(categories, membres);
-
-        if (largeDatasetEnabled) {
-            createLargeDataset(categories, membres);
-        }
+        List<Categorie> categories = createCategories(Math.max(10, Math.min(20, categoriesToGenerate)));
+        List<Membre> membres = createMembers(Math.max(300, Math.min(500, membersToGenerate)));
+        createSorties(Math.max(1000, Math.min(3000, sortiesToGenerate)), categories, membres);
     }
 
-    private List<Categorie> createBaseCategories() {
-        List<String> noms = List.of(
-                "Alpinisme de roche",
-                "Alpinisme de neige",
-                "Alpinisme mixte",
-                "Escalade sportive",
-                "Randonnée du vertige",
-                "Terrain d’aventure"
-        );
+    private List<Categorie> createCategories(int count) {
+        List<String> noms = new ArrayList<>(CATEGORIES_CATALOGUE);
+        if (count > noms.size()) {
+            int missing = count - noms.size();
+            for (int i = 0; i < missing; i++) {
+                noms.add("Catégorie supplémentaire " + (i + 1));
+            }
+        }
+
         List<Categorie> result = new ArrayList<>();
-        for (String nom : noms) {
+        for (int i = 0; i < count; i++) {
             Categorie categorie = new Categorie();
-            categorie.setNom(nom);
+            categorie.setNom(noms.get(i));
             result.add(categorieService.save(categorie));
         }
         return result;
     }
 
-    private List<Membre> createBaseMembers() {
+    private List<Membre> createMembers(int count) {
         List<Membre> result = new ArrayList<>();
-        result.add(saveMember("Dupont", "Claire", "claire.dupont@club-escalade.fr", "password123", Set.of("ROLE_ADMIN", "ROLE_USER")));
-        result.add(saveMember("Martin", "Julien", "julien.martin@club-escalade.fr", "password123", Set.of("ROLE_USER")));
-        result.add(saveMember("Lefevre", "Sophie", "sophie.lefevre@club-escalade.fr", "password123", Set.of("ROLE_USER")));
+        for (int i = 0; i < count; i++) {
+            String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
+            String nom = NOMS.get(random.nextInt(NOMS.size()));
+            String email = toEmailPart(prenom) + "." + toEmailPart(nom) + (i + 1) + "@club.fr";
+            Set<String> roles = i == 0 ? Set.of("ROLE_ADMIN", "ROLE_USER") : Set.of("ROLE_USER");
+            result.add(saveMember(nom, prenom, email, defaultPassword, roles));
+        }
         return result;
     }
 
-    private void createBaseSorties(List<Categorie> categories, List<Membre> membres) {
-        createSortie("Falaise de Buoux", "Session grande voie sur les secteurs classiques de Buoux.",
-                "https://www.buoux-escalade.fr", LocalDate.now().plusDays(30), membres.get(0), categories.get(3));
-        createSortie("Traversée du Vercors", "Randonnée sur deux jours avec nuit en refuge.",
-                null, LocalDate.now().plusDays(45), membres.get(1), categories.get(4));
-        createSortie("Initiation Mont Blanc", "Sortie encadrée pour apprendre les bases de l'alpinisme.",
-                "https://www.chamonix-guides.com", LocalDate.now().plusDays(60), membres.get(2), categories.get(1));
-    }
+    private void createSorties(int count, List<Categorie> categories, List<Membre> membres) {
+        List<String> descriptions = Arrays.asList(
+                "Sortie orientée progression technique et sécurité en milieu naturel.",
+                "Journée conviviale pour pratiquer et partager les fondamentaux de la discipline.",
+                "Itinéraire varié adapté au niveau du groupe avec encadrement du club.",
+                "Séance d'entraînement en extérieur avec objectifs de progression individuels."
+        );
 
-    private void createLargeDataset(List<Categorie> categories, List<Membre> membres) {
-        for (int i = 0; i < largeCategories; i++) {
-            Categorie categorie = new Categorie();
-            categorie.setNom("Catégorie supplémentaire " + (i + 1));
-            categories.add(categorieService.save(categorie));
-        }
-
-        for (int i = 0; i < largeMembers; i++) {
-            membres.add(saveMember(
-                    "Nom" + (i + 1),
-                    "Prenom" + (i + 1),
-                    "membre" + (i + 1) + "@club-escalade.fr",
-                    "password123",
-                    Set.of("ROLE_USER")
-            ));
-        }
-
-        for (int i = 0; i < largeSorties; i++) {
-            Categorie categorie = categories.get(i % categories.size());
-            Membre createur = membres.get(i % membres.size());
+        for (int i = 0; i < count; i++) {
+            Categorie categorie = categories.get(random.nextInt(categories.size()));
+            Membre createur = membres.get(random.nextInt(membres.size()));
             createSortie(
-                    "Sortie " + (i + 1),
-                    "Description de la sortie " + (i + 1),
-                    i % 3 == 0 ? "https://example.org/sortie/" + (i + 1) : null,
-                    LocalDate.now().plusDays((i % SORTIE_DATE_RANGE_DAYS) + 1L),
+                    "Sortie " + categorie.getNom() + " #" + (i + 1),
+                    descriptions.get(i % descriptions.size()),
+                    i % SORTIE_SITE_WEB_FREQUENCY == 0 ? "https://club.fr/sorties/" + (i + 1) : null,
+                    LocalDate.now().plusDays(random.nextInt(SORTIE_DATE_RANGE_DAYS) + 1L),
                     createur,
                     categorie
             );
@@ -148,5 +169,9 @@ public class DataInitializer implements CommandLineRunner {
         sortie.setCreateur(createur);
         sortie.setCategorie(categorie);
         sortieService.save(sortie);
+    }
+
+    private String toEmailPart(String value) {
+        return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 }

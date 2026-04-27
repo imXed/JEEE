@@ -52,9 +52,6 @@
 </form>
 
 <div class="mt-3">
-    <a href="${pageContext.request.contextPath}/register">Créer un compte</a>
-</div>
-<div class="mt-2">
     <a href="${pageContext.request.contextPath}/forgot-password">Mot de passe oublié ?</a>
 </div>
 
