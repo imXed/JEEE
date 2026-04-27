@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,9 +31,20 @@ class SecurityConfigIntegrationTest {
     @Autowired
     private MembreService membreService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @BeforeEach
     void ensureTestUserExists() {
-        if (membreService.findByEmail(TEST_USER_EMAIL).isPresent()) {
+        Membre existing = membreService.findByEmail(TEST_USER_EMAIL).orElse(null);
+        if (existing != null) {
+            if (existing.getAuthorities().contains("ROLE_USER")) {
+                return;
+            }
+            Set<String> authorities = new HashSet<>(existing.getAuthorities());
+            authorities.add("ROLE_USER");
+            existing.setAuthorities(authorities);
+            membreService.save(existing);
             return;
         }
 
@@ -39,7 +52,7 @@ class SecurityConfigIntegrationTest {
         membre.setNom("Dupont");
         membre.setPrenom("Claire");
         membre.setEmail(TEST_USER_EMAIL);
-        membre.setMotDePasse("password");
+        membre.setMotDePasse(passwordEncoder.encode("password"));
         membre.setAuthorities(Set.of("ROLE_USER"));
         membreService.save(membre);
     }
