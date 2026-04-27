@@ -1,6 +1,6 @@
-INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Dupont', 'Claire', 'claire.dupont@club-escalade.fr', '$2a$10$Dow1XzG1K7Qe9z9w9uQW5eWZz7e6b6Q6rXkzvYj7Y8W1XyYyZzYyG.mqLqy3p.VZSv96J76sm9GK');
-INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Martin', 'Julien', 'julien.martin@club-escalade.fr', '$2b$10$UzErTfaJMTmcB6RRgfGpTOGwnM7tiY.mqLqy3p.VZSv96J76sm9GK');
-INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Lefevre', 'Sophie', 'sophie.lefevre@club-escalade.fr', '$2b$10$UzErTfaJMTmcB6RRgfGpTOGwnM7tiY.mqLqy3p.VZSv96J76sm9GK');
+INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Dupont', 'Claire', 'claire.dupont@club-escalade.fr', '$2b$10$kRgGcs9chQfO7ry2Vm8Gz.qU1eLdhHu4INHHoSEnzoH0y2YnEjGgK');
+INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Martin', 'Julien', 'julien.martin@club-escalade.fr', '$2b$10$kRgGcs9chQfO7ry2Vm8Gz.qU1eLdhHu4INHHoSEnzoH0y2YnEjGgK');
+INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Lefevre', 'Sophie', 'sophie.lefevre@club-escalade.fr', '$2b$10$kRgGcs9chQfO7ry2Vm8Gz.qU1eLdhHu4INHHoSEnzoH0y2YnEjGgK');
 
 INSERT INTO categories (nom) VALUES ('Escalade');
 INSERT INTO categories (nom) VALUES ('Randonnée');
