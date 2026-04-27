@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
                         .requestMatchers(
-                                "/", "/login", "/register", "/forgot-password", "/reset-password",
+                                "/", "/login", "/forgot-password", "/reset-password",
                                 "/error", "/css/**", "/js/**", "/images/**"
                         ).permitAll()
                         .requestMatchers("/sorties/**").hasAuthority("ROLE_ADMIN")
