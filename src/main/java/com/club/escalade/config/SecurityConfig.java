@@ -27,7 +27,8 @@ public class SecurityConfig {
                                 "/", "/login", "/forgot-password", "/reset-password",
                                 "/error", "/css/**", "/js/**", "/images/**"
                         ).permitAll()
-                        .requestMatchers("/sorties/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/sorties/create", "/sorties/edit/**", "/sorties/delete/**").authenticated()
+                        .requestMatchers("/sorties/**").permitAll()
                         .requestMatchers("/membres/**").authenticated()
                         .requestMatchers("/principal/**").authenticated()
                         .requestMatchers("/**").permitAll()

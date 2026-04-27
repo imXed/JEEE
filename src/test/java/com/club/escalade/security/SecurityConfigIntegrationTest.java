@@ -21,23 +21,43 @@ class SecurityConfigIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldRedirectAnonymousUserToLoginWhenAccessingSorties() throws Exception {
+    void shouldAllowAnonymousUserToAccessSortiesList() throws Exception {
         mockMvc.perform(get("/sorties"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "claire.dupont@club-escalade.fr", authorities = {"ROLE_USER"})
+    void shouldAllowAuthenticatedUserToAccessSortiesList() throws Exception {
+        mockMvc.perform(get("/sorties"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRedirectAnonymousUserToLoginWhenAccessingSortieCreate() throws Exception {
+        mockMvc.perform(get("/sorties/create"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
     }
 
     @Test
-    @WithMockUser(username = "user1", authorities = {"ROLE_USER"})
-    void shouldForbidUserWithoutAdminAuthorityOnSorties() throws Exception {
-        mockMvc.perform(get("/sorties"))
-                .andExpect(status().isForbidden());
+    @WithMockUser(username = "claire.dupont@club-escalade.fr", authorities = {"ROLE_USER"})
+    void shouldAllowAuthenticatedUserToAccessSortieCreate() throws Exception {
+        mockMvc.perform(get("/sorties/create"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(username = "user1", authorities = {"ROLE_ADMIN"})
-    void shouldAllowAdminOnSorties() throws Exception {
-        mockMvc.perform(get("/sorties"))
+    void shouldRedirectAnonymousUserToLoginWhenAccessingMembres() throws Exception {
+        mockMvc.perform(get("/membres"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
+    @WithMockUser(username = "claire.dupont@club-escalade.fr", authorities = {"ROLE_USER"})
+    void shouldAllowAuthenticatedUserToAccessMembres() throws Exception {
+        mockMvc.perform(get("/membres"))
                 .andExpect(status().isOk());
     }
 }
