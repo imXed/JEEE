@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -56,7 +58,7 @@ public class Membre {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "membre_authorities", joinColumns = @JoinColumn(name = "membre_id"))
     @Column(name = "authority", nullable = false, length = 50)
-    private Set<String> authorities = new HashSet<>(Set.of("ROLE_USER"));
+    private Set<String> authorities = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -111,10 +113,16 @@ public class Membre {
     }
 
     public void setAuthorities(Set<String> authorities) {
-        if (authorities == null || authorities.isEmpty()) {
-            this.authorities = new HashSet<>(Set.of("ROLE_USER"));
-            return;
+        this.authorities = authorities == null ? new HashSet<>() : new HashSet<>(authorities);
+    }
+
+    @PrePersist
+    private void ensureDefaultAuthority() {
+        if (authorities == null) {
+            authorities = new HashSet<>();
         }
-        this.authorities = new HashSet<>(authorities);
+        if (authorities.isEmpty()) {
+            authorities.add("ROLE_USER");
+        }
     }
 }

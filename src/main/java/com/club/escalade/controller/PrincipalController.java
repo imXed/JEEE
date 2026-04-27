@@ -14,6 +14,6 @@ public class PrincipalController {
     @GetMapping
     @ResponseBody
     public String showPrincipal(Principal principal) {
-        return principal == null ? "anonymous" : principal.toString();
+        return principal.getName();
     }
 }
