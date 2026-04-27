@@ -1,0 +1,140 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+
+\newcommand{\screenshot}[2]{
+  \begin{figure}[H]
+    \centering
+    \fbox{\parbox[c][6cm][c]{0.9\textwidth}{\centering #1}}
+    \caption{#2}
+  \end{figure}
+}
+
+\title{Gestion d'un club d'escalade\\Rapport de projet}
+\author{Nom 1 -- Nom 2}
+\date{Avril 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+
+\section*{Informations d'authentification}
+\addcontentsline{toc}{section}{Informations d'authentification}
+
+\textbf{Rappel exigence :} dès la deuxième page, les informations d'authentification doivent être visibles.
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Mot de passe par défaut :} \texttt{password}
+  \item \textbf{Format des emails générés :} \texttt{prenom.nomX@club.fr}
+  \item \textbf{Exemple :} \texttt{jean.dupont1@club.fr} / \texttt{password}
+  \item \textbf{Rôles :} \texttt{ROLE\_USER} pour tous les membres créés.
+\end{itemize}
+
+\screenshot{Capture écran --- page de connexion (login).}{Connexion}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+Ce rapport décrit l'application WEB de gestion d'un club d'escalade réalisée avec Spring Boot (JEE), en respectant le cahier des charges fourni. L'objectif est de gérer un catalogue de sorties, avec un accès public pour les visiteurs et des fonctionnalités avancées pour les membres authentifiés.
+
+\section{Cahier des charges (synthèse)}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Lot 1 :} gestion des membres, sorties et catégories.
+  \item \textbf{Lot 2 :} initialisation automatique de données.
+  \item \textbf{Lot 3 :} consultation publique des catégories et des sorties + recherche multicritères.
+  \item \textbf{Lot 4 :} authentification et gestion des sorties par les membres.
+  \item \textbf{Lot 5 :} récupération du mot de passe par email.
+\end{itemize}
+
+\section{Architecture et technologies}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Framework :} Spring Boot 3 (Java 17).
+  \item \textbf{Persistante :} Spring Data JPA + Hibernate.
+  \item \textbf{Base de données :} H2 en mémoire.
+  \item \textbf{Présentation :} Spring MVC + JSP + JSTL.
+  \item \textbf{Sécurité :} Spring Security (form login).
+  \item \textbf{Email :} Spring Mail (configuration Fake SMTP sur \texttt{localhost:10025}).
+\end{itemize}
+
+\section{Modèle de données}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Membre} : identifiant, nom, prénom, email, mot de passe, rôles.
+  \item \textbf{Sortie} : identifiant, nom, description, site web, date, créateur, catégorie.
+  \item \textbf{Catégorie} : identifiant, nom.
+  \item \textbf{Token de réinitialisation} : jeton, date d'expiration, état d'usage, membre associé.
+\end{itemize}
+
+\screenshot{Capture écran --- schéma ou diagramme UML.}{Modèle de données}
+
+\section{Initialisation des données}
+L'application initialise automatiquement un jeu de données de test pour démontrer la montée en charge :
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{10 catégories}
+  \item \textbf{50 membres}
+  \item \textbf{1000 sorties}
+\end{itemize}
+
+\section{Fonctionnalités (visiteur)}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item Accès à la liste des catégories.
+  \item Liste paginée des sorties.
+  \item Détail d'une sortie (sans données sensibles pour les visiteurs).
+  \item Recherche multicritères : nom, catégorie, date.
+\end{itemize}
+
+\screenshot{Capture écran --- liste des catégories.}{Liste des catégories}
+\screenshot{Capture écran --- liste des sorties avec recherche.}{Recherche des sorties}
+\screenshot{Capture écran --- détail d'une sortie (visiteur).}{Détail d'une sortie}
+
+\section{Fonctionnalités (membre authentifié)}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item Accès à toutes les informations des sorties (site web, créateur).
+  \item Création, modification et suppression de \textbf{ses propres sorties}.
+  \item Accès aux listes de membres et aux sorties par membre.
+\end{itemize}
+
+\screenshot{Capture écran --- création d'une sortie.}{Création d'une sortie}
+\screenshot{Capture écran --- édition d'une sortie.}{Édition d'une sortie}
+\screenshot{Capture écran --- liste des membres.}{Liste des membres}
+
+\section{Sécurité et authentification}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item Accès public aux pages \texttt{/} et \texttt{/sorties}.
+  \item Accès authentifié requis pour \texttt{/sorties/create}, \texttt{/sorties/edit} et \texttt{/membres}.
+  \item Gestion de session et protection contre la fixation de session.
+  \item Mots de passe chiffrés avec \texttt{BCrypt}.
+\end{itemize}
+
+\section{Récupération du mot de passe}
+La procédure de récupération est basée sur un jeton à durée de vie limitée, envoyé par email via Spring Mail. L'utilisateur reçoit un lien de réinitialisation et peut définir un nouveau mot de passe.
+
+\screenshot{Capture écran --- formulaire de mot de passe oublié.}{Mot de passe oublié}
+\screenshot{Capture écran --- formulaire de réinitialisation.}{Réinitialisation du mot de passe}
+
+\section{Tests}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{DaoIntegrationTest} : validation des opérations CRUD et de la recherche multicritères.
+  \item \textbf{SecurityConfigIntegrationTest} : validation des accès anonymes vs authentifiés.
+  \item Exécution : \texttt{mvn test}.
+\end{itemize}
+
+\section{Conclusion}
+L'application respecte les lots demandés : persistance des données, initialisation, recherche, authentification, gestion des sorties et récupération de mot de passe. Les captures d'écran à insérer complèteront la démonstration fonctionnelle.
+
+\end{document}
