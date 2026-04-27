@@ -1,11 +1,14 @@
 package com.club.escalade.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
@@ -14,7 +17,9 @@ import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "membres")
@@ -47,6 +52,11 @@ public class Membre {
 
     @OneToMany(mappedBy = "createur", fetch = FetchType.LAZY)
     private List<Sortie> sortiesCreees = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "membre_authorities", joinColumns = @JoinColumn(name = "membre_id"))
+    @Column(name = "authority", nullable = false, length = 50)
+    private Set<String> authorities = new HashSet<>(Set.of("ROLE_USER"));
 
     public Long getId() {
         return id;
@@ -94,5 +104,17 @@ public class Membre {
 
     public void setSortiesCreees(List<Sortie> sortiesCreees) {
         this.sortiesCreees = new ArrayList<>(sortiesCreees);
+    }
+
+    public Set<String> getAuthorities() {
+        return Collections.unmodifiableSet(authorities);
+    }
+
+    public void setAuthorities(Set<String> authorities) {
+        if (authorities == null || authorities.isEmpty()) {
+            this.authorities = new HashSet<>(Set.of("ROLE_USER"));
+            return;
+        }
+        this.authorities = new HashSet<>(authorities);
     }
 }

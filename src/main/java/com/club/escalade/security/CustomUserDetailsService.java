@@ -9,7 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -25,9 +26,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         Membre membre = membreRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
+        Set<String> authorities = membre.getAuthorities().isEmpty()
+                ? Set.of("ROLE_USER")
+                : membre.getAuthorities();
+
         return User.withUsername(membre.getEmail())
                 .password(membre.getMotDePasse())
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .authorities(authorities.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

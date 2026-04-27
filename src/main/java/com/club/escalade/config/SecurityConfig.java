@@ -2,7 +2,7 @@ package com.club.escalade.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import jakarta.servlet.DispatcherType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,16 +22,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
                         .requestMatchers(
                                 "/", "/login", "/register", "/forgot-password", "/reset-password",
                                 "/error", "/css/**", "/js/**", "/images/**"
                         ).permitAll()
-                        .requestMatchers(
-                                "/sortie/create", "/sortie/edit/**", "/sortie/delete/**",
-                                "/sorties/create", "/sorties/edit/**", "/sorties/delete/**"
-                        ).authenticated()
-                        .requestMatchers(HttpMethod.GET, "/membres", "/membres/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        .requestMatchers("/sorties/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/membres/**").authenticated()
+                        .requestMatchers("/principal/**").authenticated()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

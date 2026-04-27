@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -14,18 +15,16 @@
 <div class="d-flex gap-2">
     <a class="btn btn-success" href="${pageContext.request.contextPath}/categories">Catégories</a>
     <a class="btn btn-info text-white" href="${pageContext.request.contextPath}/sorties">Sorties</a>
-    <c:choose>
-        <c:when test="${pageContext.request.userPrincipal != null}">
-            <form method="post" action="${pageContext.request.contextPath}/logout" class="d-inline">
-                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                <button type="submit" class="btn btn-danger">Se déconnecter</button>
-            </form>
-        </c:when>
-        <c:otherwise>
-            <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Se connecter</a>
-            <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Créer un compte</a>
-        </c:otherwise>
-    </c:choose>
+    <sec:authorize access="isAuthenticated()">
+        <form method="post" action="${pageContext.request.contextPath}/logout" class="d-inline">
+            <sec:csrfInput/>
+            <button type="submit" class="btn btn-danger">Se déconnecter</button>
+        </form>
+    </sec:authorize>
+    <sec:authorize access="isAnonymous()">
+        <a class="btn btn-primary" href="${pageContext.request.contextPath}/login">Se connecter</a>
+        <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/register">Créer un compte</a>
+    </sec:authorize>
 </div>
 </body>
 </html>
