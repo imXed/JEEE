@@ -3,7 +3,7 @@ INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Martin', 'Julien
 INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Lefevre', 'Sophie', 'sophie.lefevre@club-escalade.fr', '$2a$10$5XX6Jra0kPVUH.EjzKmr7uq4ohVxP97sJ/tSGqC7RCsCiEmlIaUbq');
 INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Dupont', 'Jean', 'jean.dupont1@club.fr', '$2a$10$E2Npu.5ITZq.z/Kzy9dI1.Xez9BYmoOjtuGfFbTPJIdv5Te4ka36q');
 
-INSERT INTO membre_authorities (membre_id, authority) VALUES ((SELECT id FROM membres WHERE email = 'jean.dupont1@club.fr'), 'ROLE_USER');
+INSERT INTO membre_authorities (membre_id, authority) VALUES (4, 'ROLE_USER');
 
 INSERT INTO categories (nom) VALUES ('Escalade');
 INSERT INTO categories (nom) VALUES ('Randonnée');
