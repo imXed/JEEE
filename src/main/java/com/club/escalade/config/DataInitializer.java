@@ -101,9 +101,9 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Contraintes pédagogiques du lot 2: maintenir un dataset de volume réaliste au démarrage.
-        List<Categorie> categories = createCategories(Math.max(MIN_CATEGORIES, Math.min(MAX_CATEGORIES, categoriesToGenerate)));
-        List<Membre> membres = createMembers(Math.max(MIN_MEMBERS, Math.min(MAX_MEMBERS, membersToGenerate)));
-        createSorties(Math.max(MIN_SORTIES, Math.min(MAX_SORTIES, sortiesToGenerate)), categories, membres);
+        List<Categorie> categories = createCategories(clamp(categoriesToGenerate, MIN_CATEGORIES, MAX_CATEGORIES));
+        List<Membre> membres = createMembers(clamp(membersToGenerate, MIN_MEMBERS, MAX_MEMBERS));
+        createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membres);
     }
 
     private List<Categorie> createCategories(int count) {
@@ -188,12 +188,18 @@ public class DataInitializer implements CommandLineRunner {
 
     private String generateUniqueEmail(String prenom, String nom, int initialSuffix, Set<String> usedEmails) {
         int suffix = initialSuffix;
+        String emailPrenom = toEmailPart(prenom);
+        String emailNom = toEmailPart(nom);
         while (true) {
-            String candidate = toEmailPart(prenom) + "." + toEmailPart(nom) + suffix + "@club.fr";
+            String candidate = emailPrenom + "." + emailNom + suffix + "@club.fr";
             if (usedEmails.add(candidate)) {
                 return candidate;
             }
             suffix++;
         }
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 }
