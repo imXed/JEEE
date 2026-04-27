@@ -47,13 +47,11 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        System.out.println("🚀 DataInitializer START");
 
         if (!seedEnabled) {
             return;
         }
 
-        // 👉 IMPORTANT : on FORCE le dataset pour éviter les bases vides
         List<Categorie> categories = createCategories(10);
         List<Membre> membres = createMembers(50);
         createSorties(1000, categories, membres);
