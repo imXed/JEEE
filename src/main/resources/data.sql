@@ -1,6 +1,12 @@
 INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Dupont', 'Claire', 'claire.dupont@club-escalade.fr', '$2a$10$gdFgUsnUI0zU55X9efkQQ.nVtezvhgBSoIgkNxMHrYAGSbqNvuuCm');
 INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Martin', 'Julien', 'julien.martin@club-escalade.fr', '$2a$10$6IASS1.IM0WD9EQA/85DAeSgohRl8RHJqC/nnFvfJY7gEaQ1P3prS');
 INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Lefevre', 'Sophie', 'sophie.lefevre@club-escalade.fr', '$2a$10$5XX6Jra0kPVUH.EjzKmr7uq4ohVxP97sJ/tSGqC7RCsCiEmlIaUbq');
+INSERT INTO membres (nom, prenom, email, mot_de_passe) VALUES ('Dupont', 'Jean', 'jean.dupont1@club.fr', '$2a$10$E2Npu.5ITZq.z/Kzy9dI1.Xez9BYmoOjtuGfFbTPJIdv5Te4ka36q');
+
+INSERT INTO membre_authorities (membre_id, authority)
+SELECT id, 'ROLE_USER'
+FROM membres
+WHERE email = 'jean.dupont1@club.fr';
 
 INSERT INTO categories (nom) VALUES ('Escalade');
 INSERT INTO categories (nom) VALUES ('Randonnée');
