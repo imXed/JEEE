@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,13 @@ import java.util.Set;
 @Component
 public class DataInitializer implements CommandLineRunner {
     private static final int SORTIE_DATE_RANGE_DAYS = 365;
-    private static final int SORTIE_SITE_WEB_FREQUENCY = 3;
+    private static final int SORTIE_SITE_WEB_INTERVAL = 3;
+    private static final int MIN_CATEGORIES = 10;
+    private static final int MAX_CATEGORIES = 20;
+    private static final int MIN_MEMBERS = 300;
+    private static final int MAX_MEMBERS = 500;
+    private static final int MIN_SORTIES = 1000;
+    private static final int MAX_SORTIES = 3000;
 
     private static final List<String> PRENOMS = List.of(
             "Jean", "Marie", "Paul", "Lucie", "Thomas", "Emma", "Nicolas", "Julie", "Antoine", "Camille",
@@ -93,9 +100,10 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        List<Categorie> categories = createCategories(Math.max(10, Math.min(20, categoriesToGenerate)));
-        List<Membre> membres = createMembers(Math.max(300, Math.min(500, membersToGenerate)));
-        createSorties(Math.max(1000, Math.min(3000, sortiesToGenerate)), categories, membres);
+        // Contraintes pédagogiques du lot 2: maintenir un dataset de volume réaliste au démarrage.
+        List<Categorie> categories = createCategories(Math.max(MIN_CATEGORIES, Math.min(MAX_CATEGORIES, categoriesToGenerate)));
+        List<Membre> membres = createMembers(Math.max(MIN_MEMBERS, Math.min(MAX_MEMBERS, membersToGenerate)));
+        createSorties(Math.max(MIN_SORTIES, Math.min(MAX_SORTIES, sortiesToGenerate)), categories, membres);
     }
 
     private List<Categorie> createCategories(int count) {
@@ -118,10 +126,11 @@ public class DataInitializer implements CommandLineRunner {
 
     private List<Membre> createMembers(int count) {
         List<Membre> result = new ArrayList<>();
+        Set<String> usedEmails = new HashSet<>();
         for (int i = 0; i < count; i++) {
             String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
             String nom = NOMS.get(random.nextInt(NOMS.size()));
-            String email = toEmailPart(prenom) + "." + toEmailPart(nom) + (i + 1) + "@club.fr";
+            String email = generateUniqueEmail(prenom, nom, i + 1, usedEmails);
             Set<String> roles = i == 0 ? Set.of("ROLE_ADMIN", "ROLE_USER") : Set.of("ROLE_USER");
             result.add(saveMember(nom, prenom, email, defaultPassword, roles));
         }
@@ -142,7 +151,7 @@ public class DataInitializer implements CommandLineRunner {
             createSortie(
                     "Sortie " + categorie.getNom() + " #" + (i + 1),
                     descriptions.get(i % descriptions.size()),
-                    i % SORTIE_SITE_WEB_FREQUENCY == 0 ? "https://club.fr/sorties/" + (i + 1) : null,
+                    i % SORTIE_SITE_WEB_INTERVAL == 0 ? "https://club.fr/sorties/" + (i + 1) : null,
                     LocalDate.now().plusDays(random.nextInt(SORTIE_DATE_RANGE_DAYS) + 1L),
                     createur,
                     categorie
@@ -172,6 +181,19 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private String toEmailPart(String value) {
-        return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+    }
+
+    private String generateUniqueEmail(String prenom, String nom, int initialSuffix, Set<String> usedEmails) {
+        int suffix = initialSuffix;
+        while (true) {
+            String candidate = toEmailPart(prenom) + "." + toEmailPart(nom) + suffix + "@club.fr";
+            if (usedEmails.add(candidate)) {
+                return candidate;
+            }
+            suffix++;
+        }
     }
 }
