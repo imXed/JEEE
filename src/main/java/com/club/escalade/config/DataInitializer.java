@@ -115,9 +115,10 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         ensureDemoUser();
+        membres = membreService.findAll();
 
         if (sortieService.count() == 0) {
-            createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membreService.findAll());
+            createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membres);
         }
     }
 
@@ -142,14 +143,13 @@ public class DataInitializer implements CommandLineRunner {
     private List<Membre> createMembers(int count) {
         List<Membre> result = new ArrayList<>();
         Set<String> usedEmails = new HashSet<>();
-        result.add(saveMember(DEMO_USER_NOM, DEMO_USER_PRENOM, DEMO_USER_EMAIL, defaultPassword, DEMO_USER_ROLES));
         usedEmails.add(DEMO_USER_EMAIL);
-
-        for (int i = 1; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
             String nom = NOMS.get(random.nextInt(NOMS.size()));
             String email = generateUniqueEmail(prenom, nom, i + 1, usedEmails);
-            result.add(saveMember(nom, prenom, email, defaultPassword, Set.of("ROLE_USER")));
+            Set<String> roles = i == 0 ? Set.of("ROLE_ADMIN", "ROLE_USER") : Set.of("ROLE_USER");
+            result.add(saveMember(nom, prenom, email, defaultPassword, roles));
         }
         return result;
     }
@@ -158,7 +158,13 @@ public class DataInitializer implements CommandLineRunner {
         if (membreService.findByEmail(DEMO_USER_EMAIL).isPresent()) {
             return;
         }
-        saveMember(DEMO_USER_NOM, DEMO_USER_PRENOM, DEMO_USER_EMAIL, defaultPassword, DEMO_USER_ROLES);
+        saveMember(
+                DEMO_USER_NOM,
+                DEMO_USER_PRENOM,
+                DEMO_USER_EMAIL,
+                defaultPassword,
+                DEMO_USER_ROLES
+        );
     }
 
     private void createSorties(int count, List<Categorie> categories, List<Membre> membres) {
