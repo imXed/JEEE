@@ -31,6 +31,10 @@ public class DataInitializer implements CommandLineRunner {
     private static final int MAX_MEMBERS = 500;
     private static final int MIN_SORTIES = 1000;
     private static final int MAX_SORTIES = 3000;
+    private static final String DEMO_USER_EMAIL = "claire.dupont@club-escalade.fr";
+    private static final String DEMO_USER_PRENOM = "Claire";
+    private static final String DEMO_USER_NOM = "Dupont";
+    private static final Set<String> DEMO_USER_ROLES = Set.of("ROLE_ADMIN", "ROLE_USER");
 
     private static final List<String> PRENOMS = List.of(
             "Jean", "Marie", "Paul", "Lucie", "Thomas", "Emma", "Nicolas", "Julie", "Antoine", "Camille",
@@ -96,14 +100,25 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (!seedEnabled || membreService.count() > 0 || categorieService.count() > 0 || sortieService.count() > 0) {
+        if (!seedEnabled) {
             return;
         }
 
-        // Contraintes pédagogiques du lot 2: maintenir un dataset de volume réaliste au démarrage.
-        List<Categorie> categories = createCategories(clamp(categoriesToGenerate, MIN_CATEGORIES, MAX_CATEGORIES));
-        List<Membre> membres = createMembers(clamp(membersToGenerate, MIN_MEMBERS, MAX_MEMBERS));
-        createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membres);
+        List<Categorie> categories = categorieService.findAll();
+        if (categories.isEmpty()) {
+            categories = createCategories(clamp(categoriesToGenerate, MIN_CATEGORIES, MAX_CATEGORIES));
+        }
+
+        List<Membre> membres = membreService.findAll();
+        if (membres.isEmpty()) {
+            membres = createMembers(clamp(membersToGenerate, MIN_MEMBERS, MAX_MEMBERS));
+        }
+
+        ensureDemoUser();
+
+        if (sortieService.count() == 0) {
+            createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membreService.findAll());
+        }
     }
 
     private List<Categorie> createCategories(int count) {
@@ -127,14 +142,23 @@ public class DataInitializer implements CommandLineRunner {
     private List<Membre> createMembers(int count) {
         List<Membre> result = new ArrayList<>();
         Set<String> usedEmails = new HashSet<>();
-        for (int i = 0; i < count; i++) {
+        result.add(saveMember(DEMO_USER_NOM, DEMO_USER_PRENOM, DEMO_USER_EMAIL, defaultPassword, DEMO_USER_ROLES));
+        usedEmails.add(DEMO_USER_EMAIL);
+
+        for (int i = 1; i < count; i++) {
             String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
             String nom = NOMS.get(random.nextInt(NOMS.size()));
             String email = generateUniqueEmail(prenom, nom, i + 1, usedEmails);
-            Set<String> roles = i == 0 ? Set.of("ROLE_ADMIN", "ROLE_USER") : Set.of("ROLE_USER");
-            result.add(saveMember(nom, prenom, email, defaultPassword, roles));
+            result.add(saveMember(nom, prenom, email, defaultPassword, Set.of("ROLE_USER")));
         }
         return result;
+    }
+
+    private void ensureDemoUser() {
+        if (membreService.findByEmail(DEMO_USER_EMAIL).isPresent()) {
+            return;
+        }
+        saveMember(DEMO_USER_NOM, DEMO_USER_PRENOM, DEMO_USER_EMAIL, defaultPassword, DEMO_USER_ROLES);
     }
 
     private void createSorties(int count, List<Categorie> categories, List<Membre> membres) {
@@ -191,7 +215,7 @@ public class DataInitializer implements CommandLineRunner {
         String emailPrenom = toEmailPart(prenom);
         String emailNom = toEmailPart(nom);
         while (true) {
-            String candidate = emailPrenom + "." + emailNom + suffix + "@club.fr";
+            String candidate = emailPrenom + "." + emailNom + suffix + "@club-escalade.fr";
             if (usedEmails.add(candidate)) {
                 return candidate;
             }
