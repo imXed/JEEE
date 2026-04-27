@@ -9,227 +9,132 @@ import com.club.escalade.service.SortieService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
-    private static final int SORTIE_DATE_RANGE_DAYS = 365;
-    private static final int SORTIE_SITE_WEB_INTERVAL = 3;
-    private static final int MIN_CATEGORIES = 10;
-    private static final int MAX_CATEGORIES = 20;
-    private static final int MIN_MEMBERS = 300;
-    private static final int MAX_MEMBERS = 500;
-    private static final int MIN_SORTIES = 1000;
-    private static final int MAX_SORTIES = 3000;
-    private static final String DEMO_USER_EMAIL = "claire.dupont@club-escalade.fr";
-    private static final String DEMO_USER_PRENOM = "Claire";
-    private static final String DEMO_USER_NOM = "Dupont";
-    private static final Set<String> DEMO_USER_ROLES = Set.of("ROLE_ADMIN", "ROLE_USER");
-
-    private static final List<String> PRENOMS = List.of(
-            "Jean", "Marie", "Paul", "Lucie", "Thomas", "Emma", "Nicolas", "Julie", "Antoine", "Camille",
-            "Hugo", "Sarah", "Louis", "Clara", "Alexandre", "Manon", "Maxime", "Léa", "Pierre", "Chloé",
-            "Arthur", "Inès", "Baptiste", "Zoé", "Raphaël", "Anaïs", "Jules", "Élise", "Noah", "Alice"
-    );
-
-    private static final List<String> NOMS = List.of(
-            "Dupont", "Martin", "Bernard", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon",
-            "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel",
-            "Girard", "Andre", "Lefevre", "Mercier", "Blanc", "Guerin", "Boyer", "Renaud", "Faure", "Chevalier"
-    );
-
-    private static final List<String> CATEGORIES_CATALOGUE = List.of(
-            "Escalade sportive",
-            "Bloc",
-            "Alpinisme neige",
-            "Alpinisme roche",
-            "Randonnée",
-            "Terrain d’aventure",
-            "Via ferrata",
-            "Cascade de glace",
-            "Escalade en salle",
-            "Grande voie",
-            "Ski de randonnée",
-            "Trail alpin",
-            "Slackline",
-            "Dry tooling",
-            "Escalade trad",
-            "Montagne été",
-            "Montagne hiver",
-            "Orientation",
-            "Bivouac",
-            "Course d’arête"
-    );
 
     private final CategorieService categorieService;
     private final MembreService membreService;
     private final SortieService sortieService;
+
     private final Random random = new Random();
 
     @Value("${app.seed.enabled:true}")
     private boolean seedEnabled;
 
-    @Value("${app.seed.categories:15}")
-    private int categoriesToGenerate;
-
-    @Value("${app.seed.members:400}")
-    private int membersToGenerate;
-
-    @Value("${app.seed.sorties:2000}")
-    private int sortiesToGenerate;
-
     @Value("${app.seed.default-password:password}")
     private String defaultPassword;
 
-    public DataInitializer(CategorieService categorieService, MembreService membreService, SortieService sortieService) {
+    private static final List<String> PRENOMS = List.of("Jean", "Marie", "Paul", "Lucie", "Thomas", "Emma");
+    private static final List<String> NOMS = List.of("Dupont", "Martin", "Bernard", "Durand", "Leroy");
+
+    private static final List<String> CATEGORIES = List.of(
+            "Escalade sportive", "Bloc", "Alpinisme", "Randonnée", "Via ferrata"
+    );
+
+    public DataInitializer(CategorieService categorieService,
+                           MembreService membreService,
+                           SortieService sortieService) {
         this.categorieService = categorieService;
         this.membreService = membreService;
         this.sortieService = sortieService;
     }
 
     @Override
-    @Transactional
     public void run(String... args) {
+
+        System.out.println("🚀 DataInitializer START");
+
         if (!seedEnabled) {
             return;
         }
 
-        List<Categorie> categories = categorieService.findAll();
-        if (categories.isEmpty()) {
-            categories = createCategories(clamp(categoriesToGenerate, MIN_CATEGORIES, MAX_CATEGORIES));
-        }
+        // 👉 IMPORTANT : on FORCE le dataset pour éviter les bases vides
+        List<Categorie> categories = createCategories(10);
+        List<Membre> membres = createMembers(50);
+        createSorties(1000, categories, membres);
 
-        List<Membre> membres = membreService.findAll();
-        if (membres.isEmpty()) {
-            membres = createMembers(clamp(membersToGenerate, MIN_MEMBERS, MAX_MEMBERS));
-        }
-
-        ensureDemoUser();
-        membres = membreService.findAll();
-
-        if (sortieService.count() == 0) {
-            createSorties(clamp(sortiesToGenerate, MIN_SORTIES, MAX_SORTIES), categories, membres);
-        }
+        System.out.println("DataInitializer END");
     }
 
     private List<Categorie> createCategories(int count) {
-        List<String> noms = new ArrayList<>(CATEGORIES_CATALOGUE);
-        if (count > noms.size()) {
-            int missing = count - noms.size();
-            for (int i = 0; i < missing; i++) {
-                noms.add("Catégorie supplémentaire " + (i + 1));
-            }
+        List<Categorie> list = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            Categorie c = new Categorie();
+            c.setNom(CATEGORIES.get(i % CATEGORIES.size()));
+            list.add(categorieService.save(c));
         }
 
-        List<Categorie> result = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            Categorie categorie = new Categorie();
-            categorie.setNom(noms.get(i));
-            result.add(categorieService.save(categorie));
-        }
-        return result;
+        return list;
     }
 
     private List<Membre> createMembers(int count) {
-        List<Membre> result = new ArrayList<>();
-        Set<String> usedEmails = new HashSet<>();
-        usedEmails.add(DEMO_USER_EMAIL);
+        List<Membre> list = new ArrayList<>();
+        Set<String> emails = new HashSet<>();
+
         for (int i = 0; i < count; i++) {
             String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
             String nom = NOMS.get(random.nextInt(NOMS.size()));
-            String email = generateUniqueEmail(prenom, nom, i + 1, usedEmails);
-            Set<String> roles = i == 0 ? Set.of("ROLE_ADMIN", "ROLE_USER") : Set.of("ROLE_USER");
-            result.add(saveMember(nom, prenom, email, defaultPassword, roles));
-        }
-        return result;
-    }
+            String email = generateEmail(prenom, nom, emails);
 
-    private void ensureDemoUser() {
-        if (membreService.findByEmail(DEMO_USER_EMAIL).isPresent()) {
-            return;
+            Membre m = new Membre();
+            m.setNom(nom);
+            m.setPrenom(prenom);
+            m.setEmail(email);
+            m.setMotDePasse(defaultPassword);
+            m.setAuthorities(Set.of("ROLE_USER"));
+
+            list.add(membreService.save(m));
         }
-        saveMember(
-                DEMO_USER_NOM,
-                DEMO_USER_PRENOM,
-                DEMO_USER_EMAIL,
-                defaultPassword,
-                DEMO_USER_ROLES
-        );
+
+        return list;
     }
 
     private void createSorties(int count, List<Categorie> categories, List<Membre> membres) {
-        List<String> descriptions = Arrays.asList(
-                "Sortie orientée progression technique et sécurité en milieu naturel.",
-                "Journée conviviale pour pratiquer et partager les fondamentaux de la discipline.",
-                "Itinéraire varié adapté au niveau du groupe avec encadrement du club.",
-                "Séance d'entraînement en extérieur avec objectifs de progression individuels."
+
+        List<String> descriptions = List.of(
+                "Sortie technique",
+                "Sortie club conviviale",
+                "Entraînement montagne",
+                "Progression encadrée"
         );
 
         for (int i = 0; i < count; i++) {
-            Categorie categorie = categories.get(random.nextInt(categories.size()));
-            Membre createur = membres.get(random.nextInt(membres.size()));
-            createSortie(
-                    "Sortie " + categorie.getNom() + " #" + (i + 1),
-                    descriptions.get(i % descriptions.size()),
-                    i % SORTIE_SITE_WEB_INTERVAL == 0 ? "https://club.fr/sorties/" + (i + 1) : null,
-                    LocalDate.now().plusDays(random.nextInt(SORTIE_DATE_RANGE_DAYS) + 1L),
-                    createur,
-                    categorie
-            );
+
+            Sortie s = new Sortie();
+            s.setNom("Sortie " + i);
+            s.setDescription(descriptions.get(i % descriptions.size()));
+            s.setSiteWeb(i % 3 == 0 ? "https://club.fr/" + i : null);
+            s.setDateSortie(LocalDate.now().plusDays(random.nextInt(365)));
+
+            s.setCategorie(categories.get(random.nextInt(categories.size())));
+            s.setCreateur(membres.get(random.nextInt(membres.size())));
+
+            sortieService.save(s);
         }
     }
 
-    private Membre saveMember(String nom, String prenom, String email, String password, Set<String> authorities) {
-        Membre membre = new Membre();
-        membre.setNom(nom);
-        membre.setPrenom(prenom);
-        membre.setEmail(email);
-        membre.setMotDePasse(password);
-        membre.setAuthorities(new HashSet<>(authorities));
-        return membreService.save(membre);
+    private String generateEmail(String prenom, String nom, Set<String> used) {
+        String base = normalize(prenom) + "." + normalize(nom);
+        String email;
+        int i = 1;
+
+        do {
+            email = base + i + "@club.fr";
+            i++;
+        } while (!used.add(email));
+
+        return email;
     }
 
-    private void createSortie(String nom, String description, String siteWeb, LocalDate date, Membre createur, Categorie categorie) {
-        Sortie sortie = new Sortie();
-        sortie.setNom(nom);
-        sortie.setDescription(description);
-        sortie.setSiteWeb(siteWeb);
-        sortie.setDateSortie(date);
-        sortie.setCreateur(createur);
-        sortie.setCategorie(categorie);
-        sortieService.save(sortie);
-    }
-
-    private String toEmailPart(String value) {
-        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-        return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
-    }
-
-    private String generateUniqueEmail(String prenom, String nom, int initialSuffix, Set<String> usedEmails) {
-        int suffix = initialSuffix;
-        String emailPrenom = toEmailPart(prenom);
-        String emailNom = toEmailPart(nom);
-        while (true) {
-            String candidate = emailPrenom + "." + emailNom + suffix + "@club-escalade.fr";
-            if (usedEmails.add(candidate)) {
-                return candidate;
-            }
-            suffix++;
-        }
-    }
-
-    private int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+    private String normalize(String s) {
+        return Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase();
     }
 }
