@@ -1,10 +1,10 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[a4paper,11pt]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
-\usepackage{geometry}
 \usepackage{graphicx}
+\usepackage{geometry}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{enumitem}
@@ -19,8 +19,8 @@
   \end{figure}
 }
 
-\title{Gestion d'un club d'escalade\\Rapport de projet}
-\author{Nom 1 -- Nom 2}
+\title{Application Web JEE\\Gestion d'un club d'escalade}
+\author{Nom 1 \and Nom 2}
 \date{Avril 2026}
 
 \begin{document}
@@ -30,19 +30,18 @@
 
 \newpage
 
-\section*{Informations d'authentification}
-\addcontentsline{toc}{section}{Informations d'authentification}
+\section*{Identifiants de démonstration}
+\addcontentsline{toc}{section}{Identifiants de démonstration}
 
-\textbf{Rappel exigence :} dès la deuxième page, les informations d'authentification doivent être visibles.
+\textbf{Mot de passe par défaut :} \texttt{password}\\
+\textbf{Format des emails :} \texttt{prenom.nomX@club.fr}\\
+\textbf{Exemple :} \texttt{jean.dupont1@club.fr}
 
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Mot de passe par défaut :} \texttt{password}
-  \item \textbf{Format des emails générés :} \texttt{prenom.nomX@club.fr}
-  \item \textbf{Exemple :} \texttt{jean.dupont1@club.fr} / \texttt{password}
-  \item \textbf{Rôles :} \texttt{ROLE\_USER} pour tous les membres créés.
-\end{itemize}
+\bigskip
 
-\screenshot{Capture écran --- page de connexion (login).}{Connexion}
+L'application génère automatiquement des membres, des catégories et des sorties afin de permettre une utilisation immédiate. Tous les comptes générés disposent du rôle \texttt{ROLE\_USER}.
+
+\screenshot{Capture écran --- page de connexion (login).}{Page de connexion}
 
 \newpage
 
@@ -51,90 +50,132 @@
 \newpage
 
 \section{Introduction}
-Ce rapport décrit l'application WEB de gestion d'un club d'escalade réalisée avec Spring Boot (JEE), en respectant le cahier des charges fourni. L'objectif est de gérer un catalogue de sorties, avec un accès public pour les visiteurs et des fonctionnalités avancées pour les membres authentifiés.
+Ce rapport présente une application web JEE de gestion d'un club d'escalade réalisée avec Spring Boot 3.3.5 (Java 17). Le projet répond à un cahier des charges structuré en lots : modèle de données, jeu de données de démonstration, consultation publique, espace membre sécurisé et procédure de réinitialisation de mot de passe.
 
-\section{Cahier des charges (synthèse)}
+L'objectif est de proposer une plateforme simple et fiable pour consulter les sorties, tout en offrant aux membres des fonctionnalités de création et de gestion. Le projet met l'accent sur la séparation des responsabilités, la validation des données et la sécurité des accès.
+
+\newpage
+
+\section{Architecture générale}
+L'application suit une architecture en couches :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Lot 1 :} gestion des membres, sorties et catégories.
-  \item \textbf{Lot 2 :} initialisation automatique de données.
-  \item \textbf{Lot 3 :} consultation publique des catégories et des sorties + recherche multicritères.
-  \item \textbf{Lot 4 :} authentification et gestion des sorties par les membres.
-  \item \textbf{Lot 5 :} récupération du mot de passe par email.
+  \item \textbf{Présentation} : vues JSP/JSTL, navigation et formulaires.
+  \item \textbf{Contrôleurs} : endpoints Spring MVC, gestion des requêtes et redirections.
+  \item \textbf{Services} : logique métier, règles de validation, orchestration.
+  \item \textbf{Persistance} : Spring Data JPA, entités JPA, repositories.
+  \item \textbf{Sécurité} : Spring Security (form login, rôles, session).
 \end{itemize}
 
-\section{Architecture et technologies}
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Framework :} Spring Boot 3 (Java 17).
-  \item \textbf{Persistante :} Spring Data JPA + Hibernate.
-  \item \textbf{Base de données :} H2 en mémoire.
-  \item \textbf{Présentation :} Spring MVC + JSP + JSTL.
-  \item \textbf{Sécurité :} Spring Security (form login).
-  \item \textbf{Email :} Spring Mail (configuration Fake SMTP sur \texttt{localhost:10025}).
-\end{itemize}
+La configuration des vues est assurée par \texttt{spring.mvc.view.prefix=/WEB-INF/jsp/} et \texttt{spring.mvc.view.suffix=.jsp}. La base utilisée est H2 en mémoire, avec génération automatique du schéma (\texttt{ddl-auto=create-drop}).
+
+\newpage
 
 \section{Modèle de données}
+L'application repose sur quatre entités principales :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Membre} : identifiant, nom, prénom, email, mot de passe, rôles.
-  \item \textbf{Sortie} : identifiant, nom, description, site web, date, créateur, catégorie.
-  \item \textbf{Catégorie} : identifiant, nom.
-  \item \textbf{Token de réinitialisation} : jeton, date d'expiration, état d'usage, membre associé.
+  \item \textbf{Membre} : nom, prénom, email unique, mot de passe chiffré, rôles.
+  \item \textbf{Sortie} : nom, description, site web, date, créateur, catégorie.
+  \item \textbf{Categorie} : libellé de la catégorie.
+  \item \textbf{PasswordResetToken} : jeton unique, expiration, état d'usage, membre.
 \end{itemize}
 
-\screenshot{Capture écran --- schéma ou diagramme UML.}{Modèle de données}
+Les relations sont gérées par JPA (\texttt{@ManyToOne}, \texttt{@OneToMany}) et la validation se fait via Bean Validation (\texttt{@NotBlank}, \texttt{@Size}, \texttt{@Email}).
 
-\section{Initialisation des données}
-L'application initialise automatiquement un jeu de données de test pour démontrer la montée en charge :
+\subsection*{Diagramme de classes}
+\screenshot{Insérer le diagramme de classes UML.}{Diagramme de classes}
+
+\newpage
+
+\section{Fonctionnalités principales (visiteur)}
+Un visiteur non authentifié peut :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{10 catégories}
-  \item \textbf{50 membres}
-  \item \textbf{1000 sorties}
+  \item consulter la liste des catégories ;
+  \item visualiser les sorties avec pagination ;
+  \item accéder au détail d'une sortie (sans informations sensibles) ;
+  \item filtrer les sorties via la recherche multicritère.
 \end{itemize}
 
-\section{Fonctionnalités (visiteur)}
+Les pages publiques sont accessibles sans authentification (\texttt{/}, \texttt{/sorties/**}, \texttt{/login}).
+
+\screenshot{Capture écran --- liste des sorties et filtres.}{Liste des sorties (visiteur)}
+
+\newpage
+
+\section{Fonctionnalités principales (membre authentifié)}
+Après authentification, un membre peut :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item Accès à la liste des catégories.
-  \item Liste paginée des sorties.
-  \item Détail d'une sortie (sans données sensibles pour les visiteurs).
-  \item Recherche multicritères : nom, catégorie, date.
+  \item créer, modifier et supprimer \textbf{ses propres sorties} ;
+  \item consulter l'ensemble des informations d'une sortie (site web, créateur) ;
+  \item accéder aux listes de membres et aux sorties par membre.
 \end{itemize}
 
-\screenshot{Capture écran --- liste des catégories.}{Liste des catégories}
-\screenshot{Capture écran --- liste des sorties avec recherche.}{Recherche des sorties}
-\screenshot{Capture écran --- détail d'une sortie (visiteur).}{Détail d'une sortie}
-
-\section{Fonctionnalités (membre authentifié)}
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item Accès à toutes les informations des sorties (site web, créateur).
-  \item Création, modification et suppression de \textbf{ses propres sorties}.
-  \item Accès aux listes de membres et aux sorties par membre.
-\end{itemize}
+Les formulaires utilisent la validation serveur pour garantir la cohérence des données. Les opérations de modification et suppression sont vérifiées côté service afin de s'assurer que l'utilisateur est bien le créateur de la sortie.
 
 \screenshot{Capture écran --- création d'une sortie.}{Création d'une sortie}
-\screenshot{Capture écran --- édition d'une sortie.}{Édition d'une sortie}
-\screenshot{Capture écran --- liste des membres.}{Liste des membres}
+
+\newpage
+
+\section{Recherche multicritère}
+La recherche repose sur un objet de critères \texttt{SortieRechercheCriteria} contenant :
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item nom (recherche partielle, normalisée) ;
+  \item catégorie (\texttt{categorieId}) ;
+  \item créateur (\texttt{createurId}) ;
+  \item période (\texttt{dateDebut} / \texttt{dateFin}).
+\end{itemize}
+
+La requête est implémentée dans \texttt{SortieRepository.rechercher} via une requête JPQL dynamique avec paramètres optionnels. Une validation empêche les périodes incohérentes (date de début après date de fin).
+
+\screenshot{Capture écran --- recherche multicritère.}{Recherche multicritère}
+
+\newpage
 
 \section{Sécurité et authentification}
+La sécurité est configurée dans \texttt{SecurityConfig} :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item Accès public aux pages \texttt{/} et \texttt{/sorties}.
-  \item Accès authentifié requis pour \texttt{/sorties/create}, \texttt{/sorties/edit} et \texttt{/membres}.
-  \item Gestion de session et protection contre la fixation de session.
-  \item Mots de passe chiffrés avec \texttt{BCrypt}.
+  \item formulaire de connexion personnalisé (\texttt{/login}) ;
+  \item identifiant = email, mot de passe = \texttt{password} ;
+  \item sessions uniques avec migration pour éviter la fixation de session ;
+  \item pages publiques et routes protégées clairement séparées.
 \end{itemize}
 
-\section{Récupération du mot de passe}
-La procédure de récupération est basée sur un jeton à durée de vie limitée, envoyé par email via Spring Mail. L'utilisateur reçoit un lien de réinitialisation et peut définir un nouveau mot de passe.
+Le service \texttt{CustomUserDetailsService} charge un membre à partir de son email et mappe les rôles vers des \texttt{SimpleGrantedAuthority}. Les mots de passe sont chiffrés via \texttt{BCryptPasswordEncoder}.
 
-\screenshot{Capture écran --- formulaire de mot de passe oublié.}{Mot de passe oublié}
-\screenshot{Capture écran --- formulaire de réinitialisation.}{Réinitialisation du mot de passe}
+\newpage
 
-\section{Tests}
+\section{Initialisation des données et configuration}
+Au démarrage, \texttt{DataInitializer} crée :
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{DaoIntegrationTest} : validation des opérations CRUD et de la recherche multicritères.
-  \item \textbf{SecurityConfigIntegrationTest} : validation des accès anonymes vs authentifiés.
-  \item Exécution : \texttt{mvn test}.
+  \item 10 catégories ;
+  \item 50 membres avec emails uniques ;
+  \item 1000 sorties réparties sur l'année.
 \end{itemize}
 
-\section{Conclusion}
-L'application respecte les lots demandés : persistance des données, initialisation, recherche, authentification, gestion des sorties et récupération de mot de passe. Les captures d'écran à insérer complèteront la démonstration fonctionnelle.
+Les paramètres techniques sont définis dans \texttt{application.properties} : configuration JSP, génération du schéma, logs SQL, SMTP local (\texttt{localhost:10025}) et validité des tokens de réinitialisation (60 minutes).
+
+Le format des emails est généré automatiquement à partir du prénom et du nom, en supprimant les accents, puis en ajoutant un suffixe numérique pour éviter les doublons.
+
+\newpage
+
+\section{Réinitialisation du mot de passe}
+Le flux de réinitialisation est implémenté par \texttt{PasswordResetServiceImpl} :
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item génération d'un token unique ;
+  \item invalidation des anciens tokens ;
+  \item envoi d'un email contenant le lien de réinitialisation ;
+  \item contrôle d'expiration et usage unique.
+\end{itemize}
+
+\section*{Tests}
+\addcontentsline{toc}{section}{Tests}
+Deux suites principales valident le fonctionnement :
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{DaoIntegrationTest} : persistance et recherche multicritère ;
+  \item \textbf{SecurityConfigIntegrationTest} : accès publics vs protégés.
+\end{itemize}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+L'application couvre l'ensemble des exigences : modèle de données, génération de données, recherche multicritère, sécurité, et réinitialisation de mot de passe. Les pages publiques et privées sont clairement séparées et l'architecture assure une base évolutive pour de futures améliorations.
 
 \end{document}
