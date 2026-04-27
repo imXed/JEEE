@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -81,9 +83,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private List<Membre> createBaseMembers() {
         List<Membre> result = new ArrayList<>();
-        result.add(saveMember("Dupont", "Claire", "claire.dupont@club-escalade.fr", "password123"));
-        result.add(saveMember("Martin", "Julien", "julien.martin@club-escalade.fr", "password123"));
-        result.add(saveMember("Lefevre", "Sophie", "sophie.lefevre@club-escalade.fr", "password123"));
+        result.add(saveMember("Dupont", "Claire", "claire.dupont@club-escalade.fr", "password123", Set.of("ROLE_ADMIN", "ROLE_USER")));
+        result.add(saveMember("Martin", "Julien", "julien.martin@club-escalade.fr", "password123", Set.of("ROLE_USER")));
+        result.add(saveMember("Lefevre", "Sophie", "sophie.lefevre@club-escalade.fr", "password123", Set.of("ROLE_USER")));
         return result;
     }
 
@@ -108,7 +110,8 @@ public class DataInitializer implements CommandLineRunner {
                     "Nom" + (i + 1),
                     "Prenom" + (i + 1),
                     "membre" + (i + 1) + "@club-escalade.fr",
-                    "password123"
+                    "password123",
+                    Set.of("ROLE_USER")
             ));
         }
 
@@ -126,12 +129,13 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private Membre saveMember(String nom, String prenom, String email, String password) {
+    private Membre saveMember(String nom, String prenom, String email, String password, Set<String> authorities) {
         Membre membre = new Membre();
         membre.setNom(nom);
         membre.setPrenom(prenom);
         membre.setEmail(email);
         membre.setMotDePasse(password);
+        membre.setAuthorities(new HashSet<>(authorities));
         return membreService.save(membre);
     }
 

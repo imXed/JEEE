@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -27,7 +28,8 @@
     <div class="card mb-4">
         <div class="card-header">Recherche</div>
         <div class="card-body">
-            <form method="get" action="${pageContext.request.contextPath}/sorties/search" class="row g-3">
+            <form method="post" action="${pageContext.request.contextPath}/sorties/search" class="row g-3">
+                <sec:csrfInput/>
                 <div class="col-md-4">
                     <label class="form-label" for="nom">Nom</label>
                     <input class="form-control" id="nom" name="nom" type="text" value="${nom}">
